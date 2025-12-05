@@ -1,0 +1,79 @@
+# pruebas_api.py
+# Pruebas básicas de integración para Usuarios API
+import httpx
+import time
+import os
+import uuid
+
+BASE_URL = os.getenv("BASE_URL", "http://usuarios_api:8000")
+
+def esperar_api():
+    """Espera a que la API responda en /salud, hasta 20 segundos."""
+    for _ in range(20):
+        try:
+            r = httpx.get(f"{BASE_URL}/salud", timeout=2.0)
+            if r.status_code == 200:
+                print("API lista para recibir pruebas")
+                return
+        except Exception:
+            pass
+        time.sleep(1)
+    raise RuntimeError("La API no respondió en el tiempo esperado")
+
+def test_registro_y_login():
+    esperar_api()
+
+    cliente_http = httpx.Client()
+
+    # Usamos un email único para cada prueba
+    email_unico = f"prueba_{uuid.uuid4().hex}@example.com"
+
+    usuario = {
+        "nombre": "Prueba Usuario",
+        "email": email_unico,
+        "contrasena": "miclave123",
+        "rol": "cliente"
+    }
+
+    # REGISTRO
+    try:
+        r = cliente_http.post(f"{BASE_URL}/usuarios", json=usuario, timeout=5.0)
+    except Exception as e:
+        raise RuntimeError(f"No se pudo conectar a la API: {e}")
+
+    print("Registro respuesta:", r.status_code, r.text)
+    assert r.status_code == 201, f"Registro falló: {r.status_code} {r.text}"
+    data = r.json()
+    assert data["email"] == usuario["email"]
+    user_id = data["id"]
+
+    # LOGIN
+    try:
+        r = cliente_http.post(
+            f"{BASE_URL}/login",
+            data={"username": usuario["email"], "password": usuario["contrasena"]},
+            timeout=5.0
+        )
+    except Exception as e:
+        raise RuntimeError(f"No se pudo conectar al login: {e}")
+
+    print("Login respuesta:", r.status_code, r.text)
+    assert r.status_code == 200, f"Login falló: {r.status_code} {r.text}"
+    token = r.json().get("access_token")
+    assert token, "No se recibió token JWT"
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # OBTENER USUARIO
+    r = cliente_http.get(f"{BASE_URL}/usuarios/{user_id}", headers=headers, timeout=5.0)
+    print("Obtener usuario respuesta:", r.status_code, r.text)
+    assert r.status_code == 200, f"Obtener usuario falló: {r.status_code} {r.text}"
+    data = r.json()
+    assert data["email"] == usuario["email"]
+
+    # /me endpoint
+    r = cliente_http.get(f"{BASE_URL}/me", headers=headers, timeout=5.0)
+    print("/me respuesta:", r.status_code, r.text)
+    assert r.status_code == 200
+
+    cliente_http.close()
