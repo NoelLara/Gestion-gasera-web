@@ -11,7 +11,7 @@ from datetime import datetime
 
 load_dotenv()
 
-SECRET_JWT = os.getenv("SECRET_JWT", "tu_secreto_muy_seguro_aqui")
+SECRET_JWT = os.getenv("SECRET_JWT", "secretoSeguro")
 ALGORITMO = os.getenv("ALGORITMO", "HS256")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")

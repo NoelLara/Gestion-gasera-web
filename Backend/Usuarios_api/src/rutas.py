@@ -11,7 +11,7 @@ from bson import ObjectId
 
 load_dotenv()
 
-SECRET_JWT = os.getenv("SECRET_JWT", "tu_secreto_muy_seguro_aqui")
+SECRET_JWT = os.getenv("SECRET_JWT", "secretoSeguro")
 ALGORITMO = os.getenv("ALGORITMO", "HS256")
 EXPIRACION_MINUTOS = int(os.getenv("EXPIRACION_MINUTOS", "60"))
 
