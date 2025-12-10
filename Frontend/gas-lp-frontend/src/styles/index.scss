@@ -1,0 +1,27 @@
+$color-principal: #4f46e5;
+$color-secundario: #f9a8d4;
+$texto: #111827;
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f3f4f6;
+  color: $texto;
+
+  h1 {
+    color: $color-principal;
+    margin-bottom: 1rem;
+  }
+
+  button {
+    background-color: $color-principal;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $color-secundario;
+    }
+  }
+}
