@@ -1,9 +1,6 @@
 name: gas_app
 
 services:
-  # ============================================================
-  # MONGO REAL (con volumen) - para APIs normales
-  # ============================================================
   mongo:
     image: mongo:5.0
     container_name: mongo_gas
@@ -16,108 +13,100 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
 
-
-  # ============================================================
-  # MONGO TEST (SIN volumen) - se borra cada vez que se levanta
-  # ============================================================
   mongo_test:
     image: mongo:5.0
     container_name: mongo_gas_test
-    restart: "no"
+    restart: unless-stopped
     ports:
       - "27018:27017"
+    volumes:
+      - mongo_test_data:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
 
-
-  # ============================================================
-  # APIs reales usando la DB real
-  # ============================================================
   usuarios_api:
-    build:
-      context: ./Backend/Usuarios_api
+    build: ./Backend/Usuarios_api
     container_name: usuariosGas_api
     restart: unless-stopped
     env_file:
       - ./Backend/Usuarios_api/.env
+    environment:
+      MONGO_DB: GasApp_Usuarios
+      MONGO_URI: mongodb://root:rootpassword@mongo:27017/GasApp_Usuarios?authSource=admin
     ports:
       - "8000:8000"
     depends_on:
       - mongo
 
   unidades_api:
-    build:
-      context: ./Backend/Unidades_api
+    build: ./Backend/Unidades_api
     container_name: unidadesGas_api
     restart: unless-stopped
     env_file:
       - ./Backend/Unidades_api/.env
+    environment:
+      MONGO_DB: GasApp_Unidades
+      MONGO_URI: mongodb://root:rootpassword@mongo:27017/GasApp_Unidades?authSource=admin
     ports:
       - "8001:8001"
     depends_on:
       - mongo
 
   vendedores_api:
-    build:
-      context: ./Backend/Vendedores_api
+    build: ./Backend/Vendedores_api
     container_name: vendedoresGas_api
     restart: unless-stopped
+    environment:
+      MONGO_DB: GasApp_Vendedores
+      MONGO_URI: mongodb://root:rootpassword@mongo:27017/GasApp_Vendedores?authSource=admin
     ports:
       - "8002:8002"
     depends_on:
       - mongo
 
   rutas_api:
-    build:
-      context: ./Backend/Rutas_api
+    build: ./Backend/Rutas_api
     container_name: rutasGas_api
     restart: unless-stopped
+    environment:
+      MONGO_DB: GasApp_Rutas
+      MONGO_URI: mongodb://root:rootpassword@mongo:27017/GasApp_Rutas?authSource=admin
     ports:
       - "8003:8003"
     depends_on:
       - mongo
 
-
-  # ============================================================
-  # PRUEBAS — usan Mongo TEST (siempre vacío)
-  # ============================================================
   pruebas_usuarios_gas:
-    build:
-      context: ./Backend/Usuarios_api
+    build: ./Backend/Usuarios_api
     container_name: pruebas_usuariosGas_api
-    command: >
-      sh -c "sleep 12 && pytest /src/pruebas_api.py -v"
+    command: sh -c "sleep 15 && pytest /src/pruebas_api.py -v"
     depends_on:
       - usuarios_api
       - mongo_test
     volumes:
       - ./Backend/Usuarios_api/src:/src
     environment:
-      MONGO_DB: GasAppTest
-      MONGO_URI: mongodb://root:rootpassword@mongo_gas_test:27017/GasAppTest?authSource=admin
+      MONGO_DB: GasAppTest_Usuarios
+      MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Usuarios?authSource=admin
 
   pruebas_unidades_gas:
-    build:
-      context: ./Backend/Unidades_api
+    build: ./Backend/Unidades_api
     container_name: pruebas_unidadesGas_api
-    command: >
-      sh -c "sleep 12 && pytest /src/pruebas_api.py -v"
+    command: sh -c "sleep 15 && pytest /src/pruebas_api.py -v"
     depends_on:
       - unidades_api
       - mongo_test
     volumes:
       - ./Backend/Unidades_api/src:/src
     environment:
-      MONGO_DB: GasAppTest
-      MONGO_URI: mongodb://root:rootpassword@mongo_gas_test:27017/GasAppTest?authSource=admin
+      MONGO_DB: GasAppTest_Unidades
+      MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Unidades?authSource=admin
 
   pruebas_vendedores_gas:
-    build:
-      context: ./Backend/Vendedores_api
+    build: ./Backend/Vendedores_api
     container_name: pruebas_vendedoresGas_api
-    command: >
-      sh -c "sleep 12 && pytest /src/pruebas_api.py -v"
+    command: sh -c "sleep 15 && pytest /src/pruebas_api.py -v"
     depends_on:
       - vendedores_api
       - usuarios_api
@@ -125,9 +114,22 @@ services:
     volumes:
       - ./Backend/Vendedores_api/src:/src
     environment:
-      MONGO_DB: GasAppTest
-      MONGO_URI: mongodb://root:rootpassword@mongo_gas_test:27017/GasAppTest?authSource=admin
+      MONGO_DB: GasAppTest_Vendedores
+      MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Vendedores?authSource=admin
 
+  pruebas_rutas_gas:
+    build: ./Backend/Rutas_api
+    container_name: pruebas_rutasGas_api
+    command: sh -c "sleep 15 && pytest /src/pruebas_api.py -v"
+    depends_on:
+      - rutas_api
+      - mongo_test
+    volumes:
+      - ./Backend/Rutas_api/src:/src
+    environment:
+      MONGO_DB: GasAppTest_Rutas
+      MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Rutas?authSource=admin
 
 volumes:
   mongo_data:
+  mongo_test_data:
