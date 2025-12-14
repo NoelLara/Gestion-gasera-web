@@ -84,8 +84,21 @@ services:
     environment:
       MONGO_DB: GasApp_Pedidos
       MONGO_URI: mongodb://root:rootpassword@mongo:27017/GasApp_Pedidos?authSource=admin
+      PEDIDOS_VENTAS_URL: http://ventas_api:8005
     ports:
       - "8004:8004"
+    depends_on:
+      - mongo
+
+  ventas_api:
+    build: ./Backend/Ventas_api
+    container_name: ventasGas_api
+    restart: unless-stopped
+    environment:
+      MONGO_DB: GasApp_Ventas
+      MONGO_URI: mongodb://root:rootpassword@mongo:27017/GasApp_Ventas?authSource=admin
+    ports:
+      - "8005:8005"
     depends_on:
       - mongo
 
@@ -154,6 +167,19 @@ services:
     environment:
       MONGO_DB: GasAppTest_Pedidos
       MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Pedidos?authSource=admin
+
+  pruebas_ventas_gas:
+    build: ./Backend/Ventas_api
+    container_name: pruebas_ventasGas_api
+    command: sh -c "sleep 15 && pytest /src/pruebas_api.py -v"
+    depends_on:
+      - ventas_api
+      - mongo_test
+    volumes:
+      - ./Backend/Ventas_api/src:/src
+    environment:
+      MONGO_DB: GasAppTest_Ventas
+      MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Ventas?authSource=admin
 
 volumes:
   mongo_data:

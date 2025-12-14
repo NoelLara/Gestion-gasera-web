@@ -15,7 +15,6 @@ def esperar_api():
         time.sleep(1)
     raise Exception("API de pedidos no disponible")
 
-
 def test_crear_pedido_cliente_publico():
     esperar_api()
 
@@ -26,6 +25,7 @@ def test_crear_pedido_cliente_publico():
         },
         "tipoPedido": "cilindro",
         "cantidad": 2,
+        "precioTotal": 1500,
         "direccion": "Calle Falsa 123",
         "lat": 19.43,
         "lng": -99.13
@@ -34,7 +34,7 @@ def test_crear_pedido_cliente_publico():
     r = httpx.post(f"{BASE_URL}/pedidos", json=pedido)
     assert r.status_code == 201
     assert r.json()["estado"] == "pendiente"
-
+    assert r.json()["precioTotal"] == 1500
 
 def test_listar_pedidos():
     esperar_api()
@@ -42,7 +42,6 @@ def test_listar_pedidos():
     r = httpx.get(f"{BASE_URL}/pedidos")
     assert r.status_code == 200
     assert isinstance(r.json(), list)
-
 
 def test_asignar_y_atender_pedido():
     esperar_api()
@@ -54,17 +53,23 @@ def test_asignar_y_atender_pedido():
         },
         "tipoPedido": "estacionario",
         "litros": 300,
+        "precioTotal": 4500,
         "direccion": "Av Siempre Viva",
         "lat": 19.5,
         "lng": -99.1
     }
 
     r_crear = httpx.post(f"{BASE_URL}/pedidos", json=pedido)
+    assert r_crear.status_code == 201
     idPedido = r_crear.json()["idPedido"]
 
     r_asignar = httpx.put(
         f"{BASE_URL}/pedidos/{idPedido}/asignar",
-        json={"idRuta": "ruta123", "idUnidad": 1, "idVendedor": 2}
+        json={
+            "idRuta": "ruta123",
+            "idUnidad": 1,
+            "idVendedor": 2
+        }
     )
     assert r_asignar.status_code == 200
 

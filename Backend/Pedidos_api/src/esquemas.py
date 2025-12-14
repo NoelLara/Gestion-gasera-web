@@ -10,8 +10,9 @@ class PedidoBase(BaseModel):
     idCliente: Optional[str] = None
     clientePublico: Optional[ClientePublico] = None
     tipoPedido: str  # cilindro | estacionario
-    cantidad: Optional[int] = None # Para cilindros
-    litros: Optional[float] = None # Para estacionarios
+    cantidad: Optional[int] = None   # cilindros
+    litros: Optional[float] = None   # estacionario
+    precioTotal: float
     direccion: str
     lat: float
     lng: float

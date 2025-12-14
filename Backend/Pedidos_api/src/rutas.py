@@ -2,18 +2,42 @@ from fastapi import APIRouter, HTTPException
 from datetime import datetime
 from db import coleccion_pedidos
 from esquemas import PedidoCreate, PedidoAsignar, PedidoEstado
+import httpx
+import os
 
 router = APIRouter()
+
+VENTAS_URL = os.getenv(
+    "PEDIDOS_VENTAS_URL",
+    "http://ventas_api:8005"
+)
 
 def generar_id():
     ultimo = coleccion_pedidos.find_one(sort=[("idPedido", -1)])
     return (ultimo["idPedido"] + 1) if ultimo else 1
 
+def registrar_venta_desde_pedido(pedido: dict):
+    venta = {
+        "idPedido": pedido["idPedido"],
+        "tipoVenta": pedido["tipoPedido"],
+        "cantidad": pedido.get("cantidad"),
+        "litros": pedido.get("litros"),
+        "precioTotal": pedido["precioTotal"],
+        "idCliente": pedido.get("idCliente"),
+        "clientePublico": pedido.get("clientePublico"),
+        "idVendedor": pedido["idVendedor"],
+        "idUnidad": pedido["idUnidad"],
+        "idRuta": pedido.get("idRuta")
+    }
+
+    try:
+        httpx.post(f"{VENTAS_URL}/ventas", json=venta, timeout=5)
+    except Exception as e:
+        print(f"⚠️ Error registrando venta: {e}")
 
 @router.get("/salud")
 def salud():
     return {"estado": "ok"}
-
 
 @router.post("/pedidos", status_code=201)
 def crear_pedido(data: PedidoCreate):
@@ -36,12 +60,9 @@ def crear_pedido(data: PedidoCreate):
     pedido.pop("_id", None)
     return pedido
 
-
 @router.get("/pedidos")
 def listar_pedidos():
-    pedidos = list(coleccion_pedidos.find({}, {"_id": 0}))
-    return pedidos
-
+    return list(coleccion_pedidos.find({}, {"_id": 0}))
 
 @router.put("/pedidos/{idPedido}/asignar")
 def asignar_pedido(idPedido: int, data: PedidoAsignar):
@@ -58,20 +79,25 @@ def asignar_pedido(idPedido: int, data: PedidoAsignar):
 
     return {"mensaje": "Pedido asignado correctamente"}
 
-
 @router.put("/pedidos/{idPedido}/estado")
 def cambiar_estado(idPedido: int, data: PedidoEstado):
+    pedido = coleccion_pedidos.find_one({"idPedido": idPedido})
+
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+
     update = {"estado": data.estado}
 
     if data.estado == "atendido":
         update["fechaAtencion"] = datetime.utcnow()
 
-    resultado = coleccion_pedidos.update_one(
+    coleccion_pedidos.update_one(
         {"idPedido": idPedido},
         {"$set": update}
     )
 
-    if resultado.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+    if data.estado == "atendido":
+        pedido_actualizado = {**pedido, **update}
+        registrar_venta_desde_pedido(pedido_actualizado)
 
     return {"mensaje": f"Pedido marcado como {data.estado}"}
