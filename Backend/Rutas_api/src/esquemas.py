@@ -1,7 +1,9 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 
 class Punto(BaseModel):
+    calle: str
+    numero: str
     lat: float
     lng: float
 

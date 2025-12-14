@@ -1,5 +1,3 @@
-# pruebas_api.py
-# Pruebas básicas de integración para Usuarios API
 import httpx
 import time
 import os

@@ -5,7 +5,7 @@ class UsuarioCrear(BaseModel):
     nombre: str = Field(..., example="Juan Perez")
     email: EmailStr = Field(..., example="juan@example.com")
     contrasena: str = Field(..., min_length=6, example="secreto123")
-    rol: str = Field(..., example="cliente")  # 'administrador', 'vendedor', 'cliente', 'usuario'
+    rol: str = Field(..., example="cliente")
 
 class UsuarioRespuesta(BaseModel):
     id: str

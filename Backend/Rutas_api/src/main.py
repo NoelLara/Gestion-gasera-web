@@ -8,3 +8,7 @@ app = FastAPI(
 )
 
 app.include_router(rutas_router)
+
+@app.get("/salud", tags=["salud"])
+def salud():
+    return {"estado": "ok"}

@@ -4,10 +4,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://mongo:27017")
-DB_NAME = os.getenv("DB_NAME", "RutasDB")
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DB = os.getenv("MONGO_DB")
 
-client = MongoClient(MONGO_URL)
-db = client[DB_NAME]
+client = MongoClient(MONGO_URI)
+db = client[MONGO_DB]
 
 rutas_collection = db["rutas"]
