@@ -1,0 +1,37 @@
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+class ClientePublico(BaseModel):
+    nombre: str
+    telefono: str
+
+class PedidoBase(BaseModel):
+    idCliente: Optional[str] = None
+    clientePublico: Optional[ClientePublico] = None
+    tipoPedido: str  # cilindro | estacionario
+    cantidad: Optional[int] = None # Para cilindros
+    litros: Optional[float] = None # Para estacionarios
+    direccion: str
+    lat: float
+    lng: float
+
+class PedidoCreate(PedidoBase):
+    pass
+
+class PedidoAsignar(BaseModel):
+    idRuta: Optional[str] = None
+    idUnidad: Optional[int] = None
+    idVendedor: Optional[int] = None
+
+class PedidoEstado(BaseModel):
+    estado: str  # pendiente | asignado | atendido | cancelado
+
+class PedidoOut(PedidoBase):
+    idPedido: int
+    estado: str
+    idRuta: Optional[str] = None
+    idUnidad: Optional[int] = None
+    idVendedor: Optional[int] = None
+    fechaCreacion: datetime
+    fechaAtencion: Optional[datetime] = None

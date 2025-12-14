@@ -22,7 +22,6 @@ def test_rutas_crud():
     esperar_api()
     cliente_http = httpx.Client()
 
-    # --- CREAR RUTA ---
     nombre_unico = f"RUTA-TEST-{uuid.uuid4().hex[:6]}"
 
     ruta = {
@@ -57,30 +56,25 @@ def test_rutas_crud():
     ruta_creada = r.json()
     ruta_id = ruta_creada["id"]
 
-    # --- OBTENER TODAS ---
     r = cliente_http.get(f"{BASE_URL}/rutas/")
     assert r.status_code == 200
     assert any(r["id"] == ruta_id for r in r.json())
 
-    # --- OBTENER POR ID ---
     r = cliente_http.get(f"{BASE_URL}/rutas/{ruta_id}")
     assert r.status_code == 200
 
-    # --- ACTUALIZAR ---
     ruta_actualizada = ruta.copy()
     ruta_actualizada["nombre"] = "Nombre actualizado"
     r = cliente_http.put(f"{BASE_URL}/rutas/{ruta_id}", json=ruta_actualizada)
     assert r.status_code == 200
     assert r.json()["nombre"] == "Nombre actualizado"
 
-    # --- ATENDER CLIENTE ---
     r = cliente_http.put(f"{BASE_URL}/rutas/{ruta_id}/clientes/201/atender")
     assert r.status_code == 200
     data = r.json()
     assert 201 not in data["clientes_pendientes"]
     assert 201 in data["clientes_atendidos"]
 
-    # --- ELIMINAR ---
     r = cliente_http.delete(f"{BASE_URL}/rutas/{ruta_id}")
     assert r.status_code == 200
 

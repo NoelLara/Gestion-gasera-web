@@ -77,6 +77,18 @@ services:
     depends_on:
       - mongo
 
+  pedidos_api:
+    build: ./Backend/Pedidos_api
+    container_name: pedidosGas_api
+    restart: unless-stopped
+    environment:
+      MONGO_DB: GasApp_Pedidos
+      MONGO_URI: mongodb://root:rootpassword@mongo:27017/GasApp_Pedidos?authSource=admin
+    ports:
+      - "8004:8004"
+    depends_on:
+      - mongo
+
   pruebas_usuarios_gas:
     build: ./Backend/Usuarios_api
     container_name: pruebas_usuariosGas_api
@@ -129,6 +141,19 @@ services:
     environment:
       MONGO_DB: GasAppTest_Rutas
       MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Rutas?authSource=admin
+
+  pruebas_pedidos_gas:
+    build: ./Backend/Pedidos_api
+    container_name: pruebas_pedidosGas_api
+    command: sh -c "sleep 15 && pytest /src/pruebas_api.py -v"
+    depends_on:
+      - pedidos_api
+      - mongo_test
+    volumes:
+      - ./Backend/Pedidos_api/src:/src
+    environment:
+      MONGO_DB: GasAppTest_Pedidos
+      MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Pedidos?authSource=admin
 
 volumes:
   mongo_data:

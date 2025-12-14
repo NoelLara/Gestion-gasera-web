@@ -1,0 +1,2 @@
+SECRET_JWT=secretoSeguro
+USUARIOS_URL=http://usuariosGas_api:8000
