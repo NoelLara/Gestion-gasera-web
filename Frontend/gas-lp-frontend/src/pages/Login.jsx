@@ -1,13 +1,49 @@
-// src/pages/Login.jsx
-import React from "react";
+import { useState } from "react";
+import "./Login.scss";
 
-function Login() {
+export default function Login() {
+  const [formulario, setFormulario] = useState({
+    correo: "",
+    contraseña: "",
+  });
+
+  const manejarCambio = (e) => {
+    setFormulario({
+      ...formulario,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const manejarEnvio = (e) => {
+    e.preventDefault();
+    console.log("Datos enviados:", formulario);
+  };
+
   return (
-    <div style={{ padding: "2rem", textAlign: "center" }}>
-      <h1>Bienvenido a Gasera</h1>
-      <p>Porfa inicia sesión para continuar</p>
+    <div className="login-contenedor">
+      <div className="login-tarjeta">
+        <h1>Iniciar sesión</h1>
+
+        <form onSubmit={manejarEnvio}>
+          <label>Correo electrónico</label>
+          <input
+            type="email"
+            name="correo"
+            placeholder="correo@ejemplo.com"
+            onChange={manejarCambio}
+          />
+
+          <label>Contraseña</label>
+          <input
+            type="password"
+            name="contraseña"
+            placeholder="••••••••"
+            onChange={manejarCambio}
+          />
+
+          <button type="submit">Entrar</button>
+        </form>
+      </div>
     </div>
   );
 }
-
-export default Login;
