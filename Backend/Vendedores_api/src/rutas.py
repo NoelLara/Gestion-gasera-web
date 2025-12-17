@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from modelos import VendedorBase
+from esquemas import VendedorBase
 from db import coleccion_vendedores
 from seguridad import verificar_token
 

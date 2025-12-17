@@ -1,4 +1,3 @@
-# pruebas_api.py
 import httpx
 import time
 import os

@@ -1,5 +1,3 @@
-# pruebas_api.py
-# Pruebas básicas de integración para Usuarios API
 import httpx
 import time
 import os
@@ -25,7 +23,6 @@ def test_registro_y_login():
 
     cliente_http = httpx.Client()
 
-    # Usamos un email único para cada prueba
     email_unico = f"prueba_{uuid.uuid4().hex}@example.com"
 
     usuario = {
@@ -35,7 +32,6 @@ def test_registro_y_login():
         "rol": "cliente"
     }
 
-    # REGISTRO
     try:
         r = cliente_http.post(f"{BASE_URL}/usuarios", json=usuario, timeout=5.0)
     except Exception as e:
@@ -47,7 +43,6 @@ def test_registro_y_login():
     assert data["email"] == usuario["email"]
     user_id = data["id"]
 
-    # LOGIN
     try:
         r = cliente_http.post(
             f"{BASE_URL}/login",
@@ -64,14 +59,12 @@ def test_registro_y_login():
 
     headers = {"Authorization": f"Bearer {token}"}
 
-    # OBTENER USUARIO
     r = cliente_http.get(f"{BASE_URL}/usuarios/{user_id}", headers=headers, timeout=5.0)
     print("Obtener usuario respuesta:", r.status_code, r.text)
     assert r.status_code == 200, f"Obtener usuario falló: {r.status_code} {r.text}"
     data = r.json()
     assert data["email"] == usuario["email"]
 
-    # /me endpoint
     r = cliente_http.get(f"{BASE_URL}/me", headers=headers, timeout=5.0)
     print("/me respuesta:", r.status_code, r.text)
     assert r.status_code == 200
