@@ -19,42 +19,79 @@ def esperar_api():
     raise RuntimeError("La API no respondió en el tiempo esperado")
 
 def test_listar_unidades_vacio_por_defecto():
-    """Verifica que la lista de unidades esté vacía por defecto"""
     esperar_api()
     r = httpx.get(f"{BASE_URL}/unidades/")
     assert r.status_code == 200
+
     unidades = r.json()
     assert isinstance(unidades, list)
     assert len(unidades) == 0
 
-def test_crear_unidad_si_hay_token_admin():
-    """
-    Intenta crear una unidad usando ADMIN_TOKEN si está definido.
-    Útil para CI cuando tienes un token admin generado por Usuarios_api.
-    """
+def test_crear_unidad_pipa_si_hay_token_admin():
     if not ADMIN_TOKEN:
         return
 
     esperar_api()
-    cliente_http = httpx.Client(headers={"Authorization": f"Bearer {ADMIN_TOKEN}"})
+    cliente_http = httpx.Client(
+        headers={"Authorization": f"Bearer {ADMIN_TOKEN}"}
+    )
 
-    numero_unico = f"TEST-{uuid.uuid4().hex[:6]}"
+    numero_unico = f"TEST-PIPA-{uuid.uuid4().hex[:6]}"
     unidad = {
-        "numero_economico": numero_unico,
         "tipo": "pipa",
+        "numero_economico": numero_unico,
         "capacidad_litros": 5000,
         "activo": True
     }
 
     r = cliente_http.post(f"{BASE_URL}/unidades/", json=unidad)
     assert r.status_code == 201, f"Creación falló: {r.status_code} {r.text}"
+
     data = r.json()
-    assert data["tipo"] == unidad["tipo"]
-    assert data["numero_economico"] == numero_unico
+    assert "id" in data
+    assert "unidad" in data
+
+    assert data["unidad"]["tipo"] == "pipa"
+    assert data["unidad"]["numero_economico"] == numero_unico
+    assert data["unidad"]["capacidad_litros"] == 5000
 
     r = cliente_http.get(f"{BASE_URL}/unidades/")
     assert r.status_code == 200
     lista = r.json()
-    assert any(u["numero_economico"] == numero_unico for u in lista)
+
+    assert any(
+        u["unidad"]["numero_economico"] == numero_unico
+        for u in lista
+    )
+
+    cliente_http.close()
+
+def test_crear_unidad_camion_si_hay_token_admin():
+    if not ADMIN_TOKEN:
+        return
+
+    esperar_api()
+    cliente_http = httpx.Client(
+        headers={"Authorization": f"Bearer {ADMIN_TOKEN}"}
+    )
+
+    numero_unico = f"TEST-CAM-{uuid.uuid4().hex[:6]}"
+    unidad = {
+        "tipo": "camion",
+        "numero_economico": numero_unico,
+        "cilindros": [
+            {"capacidad": 20, "cantidad": 5},
+            {"capacidad": 30, "cantidad": 2}
+        ],
+        "activo": True
+    }
+
+    r = cliente_http.post(f"{BASE_URL}/unidades/", json=unidad)
+    assert r.status_code == 201, f"Creación falló: {r.status_code} {r.text}"
+
+    data = r.json()
+    assert data["unidad"]["tipo"] == "camion"
+    assert data["unidad"]["numero_economico"] == numero_unico
+    assert len(data["unidad"]["cilindros"]) == 2
 
     cliente_http.close()

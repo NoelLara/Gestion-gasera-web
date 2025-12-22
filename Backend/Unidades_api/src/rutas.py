@@ -55,21 +55,19 @@ def crear_unidad(datos: UnidadCrear, usuario_actual: dict = Depends(obtener_usua
     if not (es_admin(usuario_actual) or es_vendedor(usuario_actual)):
         raise HTTPException(status_code=403, detail="No autorizado")
 
-    unidad_doc = {
-        "numero_economico": datos.numero_economico,
-        "tipo": datos.tipo,
-        "capacidad_litros": datos.capacidad_litros,
-        "activo": datos.activo if datos.activo is not None else True,
-        "creado_en": datetime.utcnow()
-    }
-    
+    unidad_doc = datos.dict()
+    unidad_doc["activo"] = unidad_doc.get("activo", True)
+    unidad_doc["creado_en"] = datetime.utcnow()
+
     try:
         resultado = coleccion_unidades.insert_one(unidad_doc)
-    except Exception as err:
-        raise HTTPException(status_code=400, detail="Numero económico duplicado o dato inválido")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Número económico duplicado o dato inválido")
 
-    unidad_doc["id"] = str(resultado.inserted_id)
-    return UnidadRespuesta(**unidad_doc)
+    return UnidadRespuesta(
+        id=str(resultado.inserted_id),
+        unidad=datos
+    )
 
 @router.get("/", response_model=List[UnidadRespuesta])
 def listar_unidades(tipo: str = None, activo: bool = None, limite: int = 100, salto: int = 0):
@@ -78,12 +76,22 @@ def listar_unidades(tipo: str = None, activo: bool = None, limite: int = 100, sa
         filtro["tipo"] = tipo
     if activo is not None:
         filtro["activo"] = activo
+
     cursor = coleccion_unidades.find(filtro).skip(salto).limit(limite).sort("creado_en", -1)
+
     resultado = []
     for doc in cursor:
-        doc["id"] = str(doc["_id"])
-        doc.pop("contrasena", None)
-        resultado.append(UnidadRespuesta(**doc))
+        unidad = doc.copy()
+        unidad.pop("_id")
+        unidad.pop("creado_en", None)
+
+        resultado.append(
+            UnidadRespuesta(
+                id=str(doc["_id"]),
+                unidad=unidad
+            )
+        )
+
     return resultado
 
 @router.get("/{id_unidad}", response_model=UnidadRespuesta)
@@ -91,11 +99,22 @@ def obtener_unidad(id_unidad: str):
     unidad = obtener_unidad_por_id(id_unidad)
     if unidad is None:
         raise HTTPException(status_code=404, detail="Unidad no encontrada")
-    unidad["id"] = str(unidad["_id"])
-    return UnidadRespuesta(**unidad)
+
+    unidad_data = unidad.copy()
+    unidad_data.pop("_id")
+    unidad_data.pop("creado_en", None)
+
+    return UnidadRespuesta(
+        id=str(unidad["_id"]),
+        unidad=unidad_data
+    )
 
 @router.patch("/{id_unidad}", response_model=UnidadRespuesta)
-def actualizar_unidad(id_unidad: str, datos: UnidadActualizar, usuario_actual: dict = Depends(obtener_usuario_actual)):
+def actualizar_unidad(
+    id_unidad: str,
+    datos: UnidadActualizar,
+    usuario_actual: dict = Depends(obtener_usuario_actual)
+):
     if not (es_admin(usuario_actual) or es_vendedor(usuario_actual)):
         raise HTTPException(status_code=403, detail="No autorizado")
 
@@ -103,34 +122,34 @@ def actualizar_unidad(id_unidad: str, datos: UnidadActualizar, usuario_actual: d
     if unidad is None:
         raise HTTPException(status_code=404, detail="Unidad no encontrada")
 
-    actualizacion = {}
-    if datos.numero_economico is not None:
-        actualizacion["numero_economico"] = datos.numero_economico
-    if datos.tipo is not None:
-        actualizacion["tipo"] = datos.tipo
-    if datos.capacidad_litros is not None:
-        if datos.capacidad_litros <= 0:
-            raise HTTPException(status_code=400, detail="capacidad_litros debe ser mayor que 0")
-        actualizacion["capacidad_litros"] = datos.capacidad_litros
-    if datos.activo is not None:
-        actualizacion["activo"] = datos.activo
+    actualizacion = datos.dict(exclude_unset=True)
 
     if actualizacion:
         try:
-            coleccion_unidades.update_one({"_id": unidad["_id"]}, {"$set": actualizacion})
+            coleccion_unidades.update_one(
+                {"_id": unidad["_id"]},
+                {"$set": actualizacion}
+            )
         except Exception:
-            raise HTTPException(status_code=400, detail="Error al actualizar (posible dato duplicado)")
+            raise HTTPException(status_code=400, detail="Error al actualizar")
 
-    unidad = obtener_unidad_por_id(id_unidad)
-    unidad["id"] = str(unidad["_id"]) if "_id" in unidad else str(unidad["_id"])
-    return UnidadRespuesta(**unidad)
+    unidad_actualizada = obtener_unidad_por_id(id_unidad)
+    unidad_data = unidad_actualizada.copy()
+    unidad_data.pop("_id")
+    unidad_data.pop("creado_en", None)
+
+    return UnidadRespuesta(
+        id=str(unidad_actualizada["_id"]),
+        unidad=unidad_data
+    )
 
 @router.delete("/{id_unidad}", status_code=204)
 def eliminar_unidad(id_unidad: str, usuario_actual: dict = Depends(obtener_usuario_actual)):
     if not es_admin(usuario_actual):
         raise HTTPException(status_code=403, detail="No autorizado")
+
     unidad = obtener_unidad_por_id(id_unidad)
     if unidad is None:
         raise HTTPException(status_code=404, detail="Unidad no encontrada")
+
     coleccion_unidades.delete_one({"_id": unidad["_id"]})
-    return {}
