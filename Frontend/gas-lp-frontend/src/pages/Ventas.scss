@@ -1,0 +1,121 @@
+@use "sass:color";
+
+$azul-gas: #4A6FA5;
+
+.ventas {
+  padding: 2rem;
+
+  h2 {
+    margin-bottom: 1.5rem;
+    color: $azul-gas;
+  }
+}
+
+/* 🌸 FILTROS */
+.filtros {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+
+  label {
+    font-weight: 600;
+    color: $azul-gas;
+  }
+
+  select {
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid color.adjust($azul-gas, $lightness: 30%);
+    background: #fff;
+    color: $azul-gas;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+      border-color: $azul-gas;
+    }
+  }
+}
+
+.ventas-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.2rem;
+}
+
+.venta-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden; // 🔑 para que el header respete bordes
+  box-shadow: 0 6px 14px rgba(74, 111, 165, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(74, 111, 165, 0.25);
+  }
+}
+
+.venta-header {
+  background: $azul-gas;
+  color: #ffffff;
+  padding: 1rem 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .label {
+    font-size: 0.8rem;
+    opacity: 0.85;
+  }
+
+  .total {
+    font-size: 1.6rem;
+    font-weight: bold;
+    display: block;
+  }
+
+  .cantidad {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: right;
+  }
+}
+
+/* ⚪ BODY */
+.venta-body {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  .fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+
+    .badge {
+      background: rgba(74, 111, 165, 0.15);
+      color: $azul-gas;
+      padding: 0.25rem 0.7rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+  }
+
+  .fecha {
+    font-size: 0.85rem;
+    color: color.adjust($azul-gas, $lightness: -20%);
+  }
+
+  .info {
+    font-size: 0.85rem;
+    color: color.adjust($azul-gas, $lightness: 15%);
+    display: flex;
+    justify-content: space-between;
+  }
+}

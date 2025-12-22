@@ -1,0 +1,60 @@
+$azul-gas: #4A6FA5;
+
+.modal-editar {
+  background: white;
+  width: 900px;
+  max-width: 95%;
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(74, 111, 165, 0.25);
+}
+
+.modal-editar h3 {
+  margin-bottom: 1rem;
+  color: $azul-gas;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+}
+
+.campo label {
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.campo input {
+  padding: 0.45rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.acciones {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+}
+
+.acciones button {
+  border: none;
+  border-radius: 12px;
+  padding: 0.45rem 1.1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.acciones .guardar {
+  background: $azul-gas;
+  color: white;
+}
