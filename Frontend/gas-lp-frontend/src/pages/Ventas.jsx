@@ -27,17 +27,35 @@ const ventasMock = [
 
 export default function Ventas() {
   const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [fechaCorte, setFechaCorte] = useState("2025-12-14");
+  const [resultadoCorte, setResultadoCorte] = useState(null);
 
   const ventasFiltradas =
     filtroTipo === "todos"
       ? ventasMock
       : ventasMock.filter(v => v.tipoVenta === filtroTipo);
 
+  const calcularCorte = () => {
+    const ventasDelDia = ventasMock.filter(
+      v => v.fechaVenta === fechaCorte
+    );
+
+    const montoTotal = ventasDelDia.reduce(
+      (acc, v) => acc + v.precioTotal,
+      0
+    );
+
+    setResultadoCorte({
+      totalVentas: ventasDelDia.length,
+      montoTotal
+    });
+  };
+
   return (
     <div className="ventas">
       <h2>Ventas</h2>
 
-      {/* 🌸 FILTRO */}
+      {/* FILTROS */}
       <div className="filtros">
         <label>Tipo:</label>
         <select
@@ -50,11 +68,10 @@ export default function Ventas() {
         </select>
       </div>
 
+      {/* LISTA DE VENTAS */}
       <div className="ventas-lista">
         {ventasFiltradas.map((venta) => (
           <div className="venta-card" key={venta.idVenta}>
-
-            {/* 🔵 HEADER */}
             <div className="venta-header">
               <div>
                 <span className="label">Total</span>
@@ -67,9 +84,7 @@ export default function Ventas() {
               </div>
             </div>
 
-            {/* ⚪ BODY */}
             <div className="venta-body">
-
               <div className="fila">
                 <span>Pedido #{venta.idPedido}</span>
                 <span className="badge">{venta.tipoVenta}</span>
@@ -89,10 +104,34 @@ export default function Ventas() {
                   Ruta: {venta.idRuta}
                 </div>
               )}
-
             </div>
           </div>
         ))}
+      </div>
+
+      {/* 💰 CORTE DE CAJA */}
+      <div className="corte-caja">
+        <h3>💰 Corte de caja</h3>
+
+        <div className="corte-form">
+          <label>Fecha:</label>
+          <input
+            type="date"
+            value={fechaCorte}
+            onChange={(e) => setFechaCorte(e.target.value)}
+          />
+
+          <button onClick={calcularCorte}>
+            Calcular corte
+          </button>
+        </div>
+
+        {resultadoCorte && (
+          <div className="resultado-corte">
+            <p>🧾 Ventas del día: <strong>{resultadoCorte.totalVentas}</strong></p>
+            <p>💵 Monto total: <strong>${resultadoCorte.montoTotal}</strong></p>
+          </div>
+        )}
       </div>
     </div>
   );

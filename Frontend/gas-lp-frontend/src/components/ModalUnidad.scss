@@ -1,0 +1,73 @@
+$azul-gas: #4A6FA5;
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal-unidad {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 520px;
+
+  &.horizontal {
+    width: 700px;
+  }
+
+  h3 {
+    margin-bottom: 1rem;
+    color: $azul-gas;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .campo {
+    display: flex;
+    flex-direction: column;
+
+    label {
+      font-size: 0.8rem;
+      margin-bottom: 0.25rem;
+    }
+
+    input, select {
+      padding: 0.4rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+  }
+
+  .acciones {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+
+    button {
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .guardar {
+      background: $azul-gas;
+      color: white;
+    }
+
+    .eliminar {
+      background: #d9534f;
+      color: white;
+    }
+  }
+}
