@@ -1,0 +1,165 @@
+@use "sass:color";
+
+$azul-gas: #4A6FA5;
+$gris-suave: #f5f6fa;
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+}
+
+.modal-unidad {
+  background: white;
+  border-radius: 14px;
+  padding: 1.6rem;
+  width: 520px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: aparecer 0.25s ease-out;
+
+  h3 {
+    margin-bottom: 1.2rem;
+    color: $azul-gas;
+    font-size: 1.2rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem 1.2rem;
+  }
+
+  .campo {
+    display: flex;
+    flex-direction: column;
+
+    label {
+      font-size: 0.8rem;
+      margin-bottom: 0.3rem;
+      color: #444;
+      font-weight: 600;
+    }
+
+    input {
+      padding: 0.45rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: $azul-gas;
+        box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+      }
+    }
+
+    &.checkbox {
+      grid-column: span 2;
+      flex-direction: row;
+      align-items: center;
+
+      label {
+        margin: 0;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      input {
+        margin-right: 0.4rem;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .switch {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+
+    input {
+      display: none;
+    }
+
+    .slider {
+      width: 42px;
+      height: 22px;
+      background: #ccc;
+      border-radius: 20px;
+      position: relative;
+      transition: background 0.2s ease;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.2s ease;
+      }
+    }
+  }
+
+  .acciones {
+    margin-top: 1.6rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+
+    button {
+      padding: 0.45rem 1.2rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
+
+      &:active {
+        transform: scale(0.97);
+      }
+    }
+
+    .guardar {
+      background: $azul-gas;
+      color: white;
+
+      &:hover {
+        background: color.adjust($azul-gas, $lightness: -8%);
+      }
+    }
+
+    .eliminar {
+      background: #ffdddd;
+      color: #a00;
+
+      &:hover {
+        background: #ffcccc;
+      }
+    }
+  }
+}
+
+.error {
+  color: #c0392b;
+  font-size: 0.7rem;
+  margin-top: 0.2rem;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -58,7 +58,6 @@ export default function ModalEditarUnidad({ unidad, onClose, onGuardar }) {
             </div>
           )}
 
-          {/* ESTADO */}
           <div className="campo estado">
             <label>Estado</label>
             <label className="switch">
@@ -77,7 +76,6 @@ export default function ModalEditarUnidad({ unidad, onClose, onGuardar }) {
           </div>
         </div>
 
-        {/* 🚚 CAMIÓN */}
         {form.tipo === "camion" && (
           <div className="seccion-cilindros">
             <h4>🛢️ Cilindros</h4>
