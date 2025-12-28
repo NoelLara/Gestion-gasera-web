@@ -11,32 +11,6 @@ $azul-gas: #4A6FA5;
   }
 }
 
-.filtros {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 1.5rem;
-
-  label {
-    font-weight: 600;
-    color: $azul-gas;
-  }
-
-  select {
-    padding: 0.4rem 0.6rem;
-    border-radius: 8px;
-    border: 1px solid color.adjust($azul-gas, $lightness: 30%);
-    background: #fff;
-    color: $azul-gas;
-    cursor: pointer;
-
-    &:focus {
-      outline: none;
-      border-color: $azul-gas;
-    }
-  }
-}
-
 .unidades-lista {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -46,7 +20,7 @@ $azul-gas: #4A6FA5;
 .unidad-card {
   background: #fff;
   border-radius: 16px;
-  overflow: hidden; // 🔑 para que el header respete bordes
+  overflow: hidden;
   box-shadow: 0 6px 14px rgba(74, 111, 165, 0.2);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 
@@ -58,7 +32,7 @@ $azul-gas: #4A6FA5;
 
 .unidad-header {
   background: $azul-gas;
-  color: #ffffff;
+  color: #fff;
   padding: 1rem 1.2rem;
   display: flex;
   justify-content: space-between;
@@ -78,7 +52,7 @@ $azul-gas: #4A6FA5;
   .cantidad {
     font-size: 0.9rem;
     font-weight: 600;
-    text-align: right;
+    text-transform: capitalize;
   }
 }
 
@@ -101,19 +75,39 @@ $azul-gas: #4A6FA5;
       border-radius: 10px;
       font-size: 0.8rem;
       font-weight: 600;
-      text-transform: capitalize;
     }
-  }
-
-  .fecha {
-    font-size: 0.85rem;
-    color: color.adjust($azul-gas, $lightness: -20%);
   }
 
   .info {
     font-size: 0.85rem;
     color: color.adjust($azul-gas, $lightness: 15%);
     display: flex;
-    justify-content: space-between;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+}
+
+.unidad-actions {
+  padding: 0.8rem 1.2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+
+  button {
+    border: none;
+    border-radius: 10px;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+
+  .editar {
+    background: rgba(74, 111, 165, 0.15);
+    color: $azul-gas;
+  }
+
+  .eliminar {
+    background: #ffdddd;
+    color: #a00;
   }
 }

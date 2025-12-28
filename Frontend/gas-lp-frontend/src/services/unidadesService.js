@@ -40,4 +40,4 @@ export async function eliminarUnidad(id, token) {
       Authorization: `Bearer ${token}`
     }
   });
-}
+}   

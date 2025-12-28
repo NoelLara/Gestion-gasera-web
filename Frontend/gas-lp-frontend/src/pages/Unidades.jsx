@@ -1,10 +1,4 @@
-import { useEffect, useState } from "react";
-import {
-  obtenerUnidades,
-  crearUnidad,
-  editarUnidad,
-  eliminarUnidad
-} from "../services/unidadesService";
+import { useState } from "react";
 
 import UnidadCard from "../components/UnidadCard";
 import ModalAgregarUnidad from "../components/ModalAgregarUnidad";
@@ -14,22 +8,44 @@ import ModalEliminarUnidad from "../components/ModalEliminarUnidad";
 import { FiPlus } from "react-icons/fi";
 import "./Unidades.scss";
 
+const unidadesMock = [
+  {
+    id: "1",
+    unidad: {
+      tipo: "pipa",
+      numero_economico: "PIPA-01",
+      capacidad_litros: 4500,
+      activo: true
+    }
+  },
+  {
+    id: "2",
+    unidad: {
+      tipo: "camion",
+      numero_economico: "CAM-12",
+      cilindros: [
+        { capacidad: 20, cantidad: 5 },
+        { capacidad: 30, cantidad: 2 }
+      ],
+      activo: true
+    }
+  },
+  {
+    id: "3",
+    unidad: {
+      tipo: "pipa",
+      numero_economico: "PIPA-02",
+      capacidad_litros: 6000,
+      activo: false
+    }
+  }
+];
+
 export default function Unidades() {
-  const [unidades, setUnidades] = useState([]);
+  const [unidades, setUnidades] = useState(unidadesMock);
   const [agregar, setAgregar] = useState(false);
   const [editar, setEditar] = useState(null);
   const [eliminar, setEliminar] = useState(null);
-
-  const token = localStorage.getItem("token"); // 👀
-
-  const cargar = async () => {
-    const data = await obtenerUnidades(token);
-    setUnidades(data);
-  };
-
-  useEffect(() => {
-    cargar();
-  }, []);
 
   return (
     <div className="unidades">
@@ -40,7 +56,7 @@ export default function Unidades() {
         </button>
       </header>
 
-      <div className="lista">
+      <div className="unidades-lista">
         {unidades.map(u => (
           <UnidadCard
             key={u.id}
@@ -54,10 +70,12 @@ export default function Unidades() {
       {agregar && (
         <ModalAgregarUnidad
           onClose={() => setAgregar(false)}
-          onGuardar={async data => {
-            await crearUnidad(data, token);
+          onGuardar={data => {
+            setUnidades(prev => [
+              ...prev,
+              { id: Date.now().toString(), unidad: data }
+            ]);
             setAgregar(false);
-            cargar();
           }}
         />
       )}
@@ -66,10 +84,13 @@ export default function Unidades() {
         <ModalEditarUnidad
           unidad={editar}
           onClose={() => setEditar(null)}
-          onGuardar={async data => {
-            await editarUnidad(editar.id, data, token);
+          onGuardar={data => {
+            setUnidades(prev =>
+              prev.map(u =>
+                u.id === editar.id ? { ...u, unidad: data } : u
+              )
+            );
             setEditar(null);
-            cargar();
           }}
         />
       )}
@@ -78,10 +99,9 @@ export default function Unidades() {
         <ModalEliminarUnidad
           unidad={eliminar}
           onClose={() => setEliminar(null)}
-          onConfirmar={async () => {
-            await eliminarUnidad(eliminar.id, token);
+          onConfirmar={() => {
+            setUnidades(prev => prev.filter(u => u.id !== eliminar.id));
             setEliminar(null);
-            cargar();
           }}
         />
       )}

@@ -47,6 +47,57 @@ $azul-gas: #4A6FA5;
     }
   }
 
+  .estado {
+    justify-content: center;
+  }
+
+  /* 🌸 Switch kawaii */
+  .switch {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+
+    input {
+      display: none;
+    }
+
+    .slider {
+      width: 42px;
+      height: 22px;
+      background: #ccc;
+      border-radius: 20px;
+      position: relative;
+      transition: background 0.2s ease;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.2s ease;
+      }
+    }
+
+    input:checked + .slider {
+      background: $azul-gas;
+
+      &::after {
+        transform: translateX(20px);
+      }
+    }
+
+    .texto {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: $azul-gas;
+    }
+  }
+
   .acciones {
     margin-top: 1.5rem;
     display: flex;
@@ -69,5 +120,64 @@ $azul-gas: #4A6FA5;
       background: #d9534f;
       color: white;
     }
+  }
+
+  .seccion-cilindros {
+    margin-top: 1.4rem;
+
+    h4 {
+      color: $azul-gas;
+      margin-bottom: 0.6rem;
+    }
+
+    .fila-cilindro {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+
+      input,
+      select {
+        padding: 0.35rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+
+      button {
+        background: #ffdede;
+        border: none;
+        border-radius: 6px;
+        padding: 0.3rem 0.5rem;
+        cursor: pointer;
+      }
+    }
+
+    .agregar {
+      margin-top: 0.4rem;
+      background: rgba(74, 111, 165, 0.15);
+      color: $azul-gas;
+      border: none;
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.fila-cilindro {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  input, select {
+    padding: 0.3rem;
+  }
+
+  button {
+    background: #ffdede;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
   }
 }
