@@ -12,5 +12,5 @@ client = MongoClient(uri)
 db = client["UsuariosDB"]
 coleccion_usuarios = db["usuarios"]
 
-coleccion_usuarios.create_index([("email", ASCENDING)], unique=True)
+coleccion_usuarios.create_index([("correo", ASCENDING)], unique=True)
 coleccion_usuarios.create_index([("rol", ASCENDING)])

@@ -23,11 +23,12 @@ def test_registro_y_login():
 
     cliente_http = httpx.Client()
 
-    email_unico = f"prueba_{uuid.uuid4().hex}@example.com"
+    correo_unico = f"prueba_{uuid.uuid4().hex}@example.com"
 
     usuario = {
         "nombre": "Prueba Usuario",
-        "email": email_unico,
+        "correo": correo_unico,
+        "telefono": "+5215512345678",
         "contrasena": "miclave123",
         "rol": "cliente"
     }
@@ -39,14 +40,18 @@ def test_registro_y_login():
 
     print("Registro respuesta:", r.status_code, r.text)
     assert r.status_code == 201, f"Registro falló: {r.status_code} {r.text}"
+
     data = r.json()
-    assert data["email"] == usuario["email"]
+    assert data["correo"] == usuario["correo"]
     user_id = data["id"]
 
     try:
         r = cliente_http.post(
             f"{BASE_URL}/login",
-            data={"username": usuario["email"], "password": usuario["contrasena"]},
+            data={
+                "username": usuario["correo"],
+                "password": usuario["contrasena"]
+            },
             timeout=5.0
         )
     except Exception as e:
@@ -54,6 +59,7 @@ def test_registro_y_login():
 
     print("Login respuesta:", r.status_code, r.text)
     assert r.status_code == 200, f"Login falló: {r.status_code} {r.text}"
+
     token = r.json().get("access_token")
     assert token, "No se recibió token JWT"
 
@@ -61,9 +67,9 @@ def test_registro_y_login():
 
     r = cliente_http.get(f"{BASE_URL}/usuarios/{user_id}", headers=headers, timeout=5.0)
     print("Obtener usuario respuesta:", r.status_code, r.text)
-    assert r.status_code == 200, f"Obtener usuario falló: {r.status_code} {r.text}"
+    assert r.status_code == 200
     data = r.json()
-    assert data["email"] == usuario["email"]
+    assert data["correo"] == usuario["correo"]
 
     r = cliente_http.get(f"{BASE_URL}/me", headers=headers, timeout=5.0)
     print("/me respuesta:", r.status_code, r.text)
