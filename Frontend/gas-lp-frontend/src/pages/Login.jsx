@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login } from "../services/authService";
 import "./Login.scss";
 
 export default function Login() {
@@ -19,17 +20,21 @@ export default function Login() {
     });
   };
 
-  const manejarEnvio = (e) => {
+  const manejarEnvio = async (e) => {
     e.preventDefault();
 
-    if (!formulario.correo || !formulario.contraseña) {
-      alert("Todos los campos son obligatorios");
-      return;
+    try {
+      const respuesta = await login(
+        formulario.correo,
+        formulario.contraseña
+      );
+
+      localStorage.setItem("token", respuesta.access_token);
+
+      navigate("/menu");
+    } catch (error) {
+      alert("Correo o contraseña incorrectos");
     }
-
-    console.log("Datos enviados:", formulario);
-
-    navigate("/menu");
   };
 
   return (

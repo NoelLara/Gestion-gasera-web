@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8001/unidades";
+const API_URL = "http://localhost:8001/unidades/";
 
 export async function obtenerUnidades(token) {
   const r = await fetch(API_URL, {
@@ -40,4 +40,4 @@ export async function eliminarUnidad(id, token) {
       Authorization: `Bearer ${token}`
     }
   });
-}   
+}
