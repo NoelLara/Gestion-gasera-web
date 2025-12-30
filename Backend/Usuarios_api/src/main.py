@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from rutas import router as rutas_usuarios
+from rutas import crear_admin_si_no_existe, router as rutas_usuarios
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Usuarios API")
@@ -17,3 +17,7 @@ app.include_router(rutas_usuarios)
 @app.get("/salud", tags=["salud"])
 def salud():
     return {"estado": "ok"}
+
+@app.on_event("startup")
+def startup():
+    crear_admin_si_no_existe()
