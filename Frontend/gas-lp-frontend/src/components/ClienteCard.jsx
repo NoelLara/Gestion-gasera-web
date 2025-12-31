@@ -1,44 +1,30 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useState } from "react";
 import "./ClienteCard.scss";
+import * as clientesService from "../services/clientesService";
 
-export default function ModalCliente({ cliente, onClose, onGuardar }) {
-  const [nombre, setNombre] = useState(cliente?.nombre || "");
-  const [email, setEmail] = useState(cliente?.email || "");
+export default function ModalCliente({ onClose, onGuardar }) {
+  const [nombre, setNombre] = useState("");
+  const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
-
-  useEffect(() => {
-    setNombre(cliente?.nombre || "");
-    setEmail(cliente?.email || "");
-    setContrasena("");
-  }, [cliente]);
 
   const guardar = async () => {
     try {
-      if (cliente) {
-        await axios.patch(`http://localhost:8000/usuarios/${cliente.id}`, {
-          nombre, email, contrasena
-        });
-      } else {
-        await axios.post("http://localhost:8000/usuarios", {
-          nombre, email, contrasena, rol: "cliente"
-        });
-      }
+      await clientesService.crearCliente({ nombre, correo, contrasena });
       onGuardar();
       onClose();
     } catch (error) {
-      console.error("Error guardando cliente:", error);
+      console.error("Error creando cliente:", error);
     }
   };
 
   return (
     <div className="modal-fondo">
       <div className="modal">
-        <h3>{cliente ? "Editar Cliente" : "Agregar Cliente"}</h3>
+        <h3>Agregar Cliente</h3>
         <label>Nombre</label>
         <input value={nombre} onChange={e => setNombre(e.target.value)} />
         <label>Email</label>
-        <input value={email} onChange={e => setEmail(e.target.value)} />
+        <input value={correo} onChange={e => setCorreo(e.target.value)} />
         <label>Contraseña</label>
         <input type="password" value={contrasena} onChange={e => setContrasena(e.target.value)} />
         <div className="acciones">

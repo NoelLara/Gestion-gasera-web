@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../services/authService";
+import { login, obtenerPerfil } from "../services/authService";
 import "./Login.scss";
 
 export default function Login() {
@@ -8,7 +8,7 @@ export default function Login() {
 
   const [formulario, setFormulario] = useState({
     correo: "",
-    contraseña: "",
+    password: "",
   });
 
   const manejarCambio = (e) => {
@@ -26,12 +26,21 @@ export default function Login() {
     try {
       const respuesta = await login(
         formulario.correo,
-        formulario.contraseña
+        formulario.password
       );
 
       localStorage.setItem("token", respuesta.access_token);
 
-      navigate("/menu");
+      const perfil = await obtenerPerfil();
+
+      if (perfil.rol === "administrador") {
+        navigate("/clientes");
+      } else if (perfil.rol === "vendedor") {
+        navigate("/pedidos");
+      } else {
+        navigate("/pedidos");
+      }
+
     } catch (error) {
       alert("Correo o contraseña incorrectos");
     }
@@ -58,8 +67,8 @@ export default function Login() {
             <label>Contraseña</label>
             <input
               type="password"
-              name="contraseña"
-              value={formulario.contraseña}
+              name="password"
+              value={formulario.password}
               placeholder="••••••••"
               onChange={manejarCambio}
             />
@@ -67,10 +76,15 @@ export default function Login() {
 
           <button
             type="submit"
-            disabled={!formulario.correo || !formulario.contraseña}
+            disabled={!formulario.correo || !formulario.password}
           >
             Entrar
           </button>
+
+          <p className="ir-a-registrarse">
+            ¿No tienes cuenta?{" "}
+            <span onClick={() => navigate("/registrarse")}>Regístrate aquí</span>
+          </p>
         </form>
       </div>
     </div>

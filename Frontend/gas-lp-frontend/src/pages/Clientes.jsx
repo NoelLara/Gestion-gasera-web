@@ -1,35 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { FiTrash2 } from "react-icons/fi";
+import { getClientes, eliminarCliente } from "../services/clientesService";
 import "./Clientes.scss";
-import ModalCliente from "../components/ClienteCard";
-import { FiEdit, FiTrash2, FiPlus } from "react-icons/fi";
 
 export default function Clientes() {
-  const [clientes, setClientes] = useState([
-    { id: "1", nombre: "Ana López", email: "ana@example.com", rol: "cliente" },
-    { id: "2", nombre: "Carlos Rivera", email: "carlos@example.com", rol: "cliente" },
-    { id: "3", nombre: "Lucía Pérez", email: "lucia@example.com", rol: "cliente" },
-  ]);
+  const [clientes, setClientes] = useState([]);
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [clienteEditar, setClienteEditar] = useState(null);
+  useEffect(() => {
+    cargarClientes();
+  }, []);
 
-  const abrirModal = (cliente = null) => {
-    setClienteEditar(cliente);
-    setModalOpen(true);
+  const cargarClientes = async () => {
+    try {
+      const data = await getClientes();
+      setClientes(data);
+    } catch (error) {
+      console.error("Error cargando clientes:", error);
+    }
   };
 
-  const eliminarCliente = (id) => {
+  const handleEliminar = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar este cliente? 😿")) return;
-    setClientes(clientes.filter(c => c.id !== id));
+    const token = localStorage.getItem("token"); 
+    try {
+      await eliminarCliente(id, token);
+      setClientes(clientes.filter(c => c.id !== id));
+    } catch (error) {
+      console.error("No se pudo eliminar el cliente:", error);
+    }
   };
 
   return (
     <div className="clientes-page">
       <header>
         <h2>Clientes 🐱</h2>
-        <button className="btn-agregar" onClick={() => abrirModal()}>
-          <FiPlus size={20} /> Agregar Cliente
-        </button>
       </header>
 
       <table className="tabla-clientes">
@@ -37,21 +41,18 @@ export default function Clientes() {
           <tr>
             <th>Nombre</th>
             <th>Email</th>
-            <th>Rol</th>
+            <th>Teléfono</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {clientes.map((c) => (
+          {clientes.map(c => (
             <tr key={c.id}>
               <td>{c.nombre}</td>
-              <td>{c.email}</td>
-              <td>{c.rol}</td>
+              <td>{c.correo}</td>
+              <td>{c.telefono}</td>
               <td>
-                <button onClick={() => abrirModal(c)} className="btn-editar">
-                  <FiEdit />
-                </button>
-                <button onClick={() => eliminarCliente(c.id)} className="btn-eliminar">
+                <button onClick={() => handleEliminar(c.id)} className="btn-eliminar">
                   <FiTrash2 />
                 </button>
               </td>
@@ -59,14 +60,6 @@ export default function Clientes() {
           ))}
         </tbody>
       </table>
-
-      {modalOpen && (
-        <ModalCliente
-          cliente={clienteEditar}
-          onClose={() => setModalOpen(false)}
-          onGuardar={() => {}}
-        />
-      )}
     </div>
   );
 }

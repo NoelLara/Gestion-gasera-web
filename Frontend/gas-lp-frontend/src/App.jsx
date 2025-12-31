@@ -8,12 +8,14 @@ import Rutas from "./pages/Rutas";
 import Pedidos from "./pages/Pedidos";
 import Ventas from "./pages/Ventas";
 import CorteCaja from "./pages/CorteCaja";
+import Registrase from "./pages/Registrarse";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="registrarse" element={<Registrase />}/>
 
         <Route path="/" element={<MenuPrincipal />}>
           <Route path="clientes" element={<Clientes />} />

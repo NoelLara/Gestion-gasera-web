@@ -1,11 +1,11 @@
-.login-contenedor {
+.registrarse-contenedor {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   background: #f2f2f2;
 
-  .login-tarjeta {
+  .registrarse-tarjeta {
     width: 350px;
     padding: 2rem;
     background: #ffffff;
@@ -72,7 +72,7 @@
   }
 }
 
-.ir-a-registrarse {
+.ir-a-login {
   text-align: center;
   margin-top: 1rem;
   font-size: 0.9rem;

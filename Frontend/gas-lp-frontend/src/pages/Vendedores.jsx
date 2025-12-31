@@ -1,52 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Vendedores.scss";
 import { FiEdit, FiTrash2, FiPlus } from "react-icons/fi";
 import ModalVendedor from "../components/ModalVendedor";
 import ModalEliminarVendedor from "../components/ModalEliminarVendedor";
+import { getVendedores, crearVendedor, editarVendedor } from "../services/vendedoresService";
 
 export default function Vendedores() {
-  const [vendedores, setVendedores] = useState([
-    {
-      idVendedor: 1,
-      nombre: "Juan Pérez",
-      telefono: "555-123-4567",
-      email: "juan@empresa.com",
-      activo: true,
-    },
-    {
-      idVendedor: 2,
-      nombre: "María López",
-      telefono: "555-987-6543",
-      email: "maria@empresa.com",
-      activo: false,
-    },
-  ]);
-
   const [modalOpen, setModalOpen] = useState(false);
+  const [vendedores, setVendedores] = useState([]);
   const [vendedorEliminar, setVendedorEliminar] = useState(null);
   const [vendedorEditar, setVendedorEditar] = useState(null);
+
+  useEffect(() => {
+    cargarVendedores();
+  }, []);
+
+  const cargarVendedores = async () => {
+    try {
+      const res = await getVendedores();
+      setVendedores(res.data);
+    } catch (e) {
+      console.error("Error cargando vendedores", e);
+    }
+  };
 
   const abrirModal = (v = null) => {
     setVendedorEditar(v);
     setModalOpen(true);
   };
 
-  const guardarVendedor = (data) => {
-    if (vendedorEditar) {
-      setVendedores(prev =>
-        prev.map(v =>
-          v.idVendedor === vendedorEditar.idVendedor
-            ? { ...v, ...data }
-            : v
-        )
-      );
-    } else {
-      setVendedores(prev => [
-        ...prev,
-        { ...data, idVendedor: Date.now() },
-      ]);
+  const guardarVendedor = async (data) => {
+    try {
+      if (vendedorEditar) {
+        await editarVendedor(vendedorEditar.idVendedor, data);
+      } else {
+        await crearVendedor(data);
+      }
+
+      await cargarVendedores();
+      setModalOpen(false);
+      setVendedorEditar(null);
+    } catch (e) {
+      alert(e.response?.data?.detail || "Error guardando vendedor");
     }
-    setModalOpen(false);
   };
 
   const eliminarVendedor = () => {
@@ -69,7 +65,7 @@ export default function Vendedores() {
         <thead>
           <tr>
             <th>Nombre</th>
-            <th>Email</th>
+            <th>Correo</th>
             <th>Teléfono</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -79,7 +75,7 @@ export default function Vendedores() {
           {vendedores.map(v => (
             <tr key={v.idVendedor}>
               <td>{v.nombre}</td>
-              <td>{v.email}</td>
+              <td>{v.correo}</td>
               <td>{v.telefono}</td>
               <td>{v.activo ? "🟢 Activo" : "🔴 Inactivo"}</td>
               <td>

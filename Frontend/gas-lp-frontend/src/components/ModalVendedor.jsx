@@ -7,7 +7,7 @@ export default function ModalVendedor({ vendedor, onClose, onGuardar }) {
     vendedor || {
       nombre: "",
       telefono: "",
-      email: "",
+      correo: "",
       activo: true,
     }
   );
@@ -25,7 +25,7 @@ export default function ModalVendedor({ vendedor, onClose, onGuardar }) {
       errs.telefono = "El teléfono debe tener 10 dígitos";
     }
 
-    if (!emailRegex.test(form.email)) {
+    if (!emailRegex.test(form.correo)) {
       errs.email = "Email no válido";
     }
 
@@ -58,10 +58,10 @@ export default function ModalVendedor({ vendedor, onClose, onGuardar }) {
           </div>
 
           <div className="campo">
-            <label>Email</label>
+            <label>Correo</label>
             <input
-              value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })}
+              value={form.correo}
+              onChange={e => setForm({ ...form, correo: e.target.value })}
             />
             {errores.email && <small className="error">{errores.email}</small>}
           </div>

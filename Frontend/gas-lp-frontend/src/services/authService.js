@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:8001/login";
+import axios from "axios";
+
+const API_URL = "http://localhost:8000/login";
 
 export async function login(correo, contraseña) {
   const formData = new URLSearchParams();
@@ -19,3 +21,20 @@ export async function login(correo, contraseña) {
 
   return r.json();
 }
+
+export async function obtenerPerfil() {
+  const token = localStorage.getItem("token");
+
+  const r = await fetch("http://localhost:8000/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!r.ok) throw new Error("No autorizado");
+  return r.json();
+}
+
+export const registrar = async (usuario) => {
+  return axios.post("http://localhost:8000/usuarios", usuario);
+};
