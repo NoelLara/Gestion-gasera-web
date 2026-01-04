@@ -2,6 +2,20 @@ import httpx
 import time
 import os
 import uuid
+import pytest
+from pymongo import MongoClient
+
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DB = os.getenv("MONGO_DB")
+
+def limpiar_bd():
+    client = MongoClient(MONGO_URI)
+    db = client[MONGO_DB]
+    db.rutas.delete_many({})
+
+@pytest.fixture(autouse=True)
+def limpiar_rutas():
+    limpiar_bd()
 
 BASE_URL = os.getenv("BASE_URL", "http://rutas_api:8003")
 
@@ -16,7 +30,6 @@ def esperar_api():
             pass
         time.sleep(1)
     raise RuntimeError("La API no respondió en el tiempo esperado")
-
 
 def test_rutas_crud():
     esperar_api()
