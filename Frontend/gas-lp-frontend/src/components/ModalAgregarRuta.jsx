@@ -143,7 +143,6 @@ export default function ModalAgregarRuta({
             </div>
           </div>
 
-          {/* Vendedores */}
           <div className="campo">
             <label>🧑‍💼 Vendedores</label>
             <div className="combobox">
@@ -159,11 +158,21 @@ export default function ModalAgregarRuta({
               />
               {vendedoresFiltrados.length > 0 && (
                 <ul className="dropdown">
-                  {vendedoresFiltrados.map(v => (
-                    <li key={`li-vendedor-${v.id ?? v.nombre}`} onClick={() => agregarVendedor(v)}>
-                      {v.nombre}
-                    </li>
-                  ))}
+                  {vendedoresFiltrados.map((v, index) => {
+                    const safeKey =
+                      v.id !== undefined && v.id !== null
+                        ? v.id
+                        : `no-id-${index}`;
+
+                    return (
+                      <li
+                        key={`li-vendedor-${safeKey}`}
+                        onClick={() => agregarVendedor(v)}
+                      >
+                        {v.nombre}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>

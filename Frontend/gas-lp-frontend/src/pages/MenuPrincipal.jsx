@@ -1,21 +1,25 @@
-import Sidebar from "../components/Sidebar";
+import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
 import "./MenuPrincipal.scss";
 
 export default function MenuPrincipal() {
   const navigate = useNavigate();
 
-  const perfil = JSON.parse(sessionStorage.getItem("perfil"));
+  const perfilRaw = sessionStorage.getItem("perfil");
+  const perfil = perfilRaw ? JSON.parse(perfilRaw) : null;
 
-  if (!perfil) {
-    navigate("/");
-    return null;
-  }
+  useEffect(() => {
+    if (!perfil) {
+      navigate("/", { replace: true });
+    }
+  }, [perfil, navigate]);
+
+  if (!perfil) return null;
 
   const cerrarSesion = () => {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("perfil");
-    navigate("/");
+    sessionStorage.clear();
+    navigate("/", { replace: true });
   };
 
   return (
@@ -27,7 +31,10 @@ export default function MenuPrincipal() {
           <p>
             Bienvenido, <strong>{perfil.nombre}</strong>
           </p>
-          <button onClick={cerrarSesion}>Cerrar sesión</button>
+
+          <button onClick={cerrarSesion}>
+            Cerrar sesión
+          </button>
         </header>
 
         <section className="vista">

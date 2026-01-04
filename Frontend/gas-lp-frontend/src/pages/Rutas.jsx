@@ -30,19 +30,31 @@ export default function Rutas() {
 
     const cargarDatos = async () => {
       try {
-        const resUnidades = await obtenerUnidades();
-        const unidades = (resUnidades.data || []).map(u => ({
-          ...u,
-          id: String(u.id),   // aseguramos que sea número
-          nombre: u.nombre || `Unidad ${u.id}`
-        }));
+        const resUnidades = await obtenerUnidades(sessionStorage.getItem("token"));
+        const unidades = (resUnidades || []).map(u => {
+          const info = u.unidad;
+
+          let nombre = "Unidad";
+
+          if (info.tipo === "pipa") {
+            nombre = `Pipa ${info.numero_economico || u.id.slice(-4)}`;
+          } else if (info.tipo === "camion") {
+            nombre = `Camión ${info.numero_economico || u.id.slice(-4)}`;
+          }
+
+          return {
+            id: String(u.id),
+            tipo: info.tipo,
+            nombre
+          };
+        });
         setTodasLasUnidades(unidades);
 
         const resVendedores = await getVendedores();
         const vendedores = (resVendedores.data || []).map(v => ({
           ...v,
-          id: Number(v.id),  // aseguramos que sea número
-          nombre: v.nombre || `Vendedor ${v.id}`
+          id: String(v.idVendedor),
+          nombre: v.nombre || `Vendedor`
         }));
         setTodosLosVendedores(vendedores);
       } catch (err) {

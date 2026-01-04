@@ -32,6 +32,13 @@ export const actualizarCliente = async (id, { nombre, correo, contrasena }) => {
 };
 
 export const eliminarCliente = async (id) => {
-  const res = await axios.delete(`${BASE_URL}/usuarios/${id}`);
+  const token = sessionStorage.getItem("token");
+
+  const res = await axios.delete(`${BASE_URL}/usuarios/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
   return res.data;
 };
