@@ -29,16 +29,19 @@ export default function Login() {
         formulario.password
       );
 
-      localStorage.setItem("token", respuesta.access_token);
+      sessionStorage.setItem("token", respuesta.access_token);
 
       const perfil = await obtenerPerfil();
+
+      sessionStorage.setItem("perfil", JSON.stringify(perfil));
 
       if (perfil.rol === "administrador") {
         navigate("/clientes");
       } else if (perfil.rol === "vendedor") {
         navigate("/pedidos");
-      } else {
-        navigate("/pedidos");
+      } else if (perfil.rol === "cliente") {
+        sessionStorage.setItem("idCliente", perfil.id);
+        navigate("/cliente");
       }
 
     } catch (error) {

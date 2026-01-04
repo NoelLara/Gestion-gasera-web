@@ -181,3 +181,16 @@ def crear_admin_si_no_existe():
 
     coleccion_usuarios.insert_one(admin_data)
     print("Admin creado correctamente")
+
+@router.get("/clientes", response_model=list[UsuarioRespuesta])
+def listar_clientes(usuario_actual: dict = Depends(obtener_usuario_actual)):
+    if usuario_actual["rol"] != "administrador":
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    clientes = []
+    for u in coleccion_usuarios.find({"rol": "cliente"}):
+        u["id"] = str(u["_id"])
+        u.pop("contrasena", None)
+        clientes.append(u)
+
+    return clientes

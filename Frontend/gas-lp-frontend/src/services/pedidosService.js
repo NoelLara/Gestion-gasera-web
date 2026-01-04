@@ -6,8 +6,16 @@ export const getPedidos = async () => {
   return axios.get(`${API_URL}/pedidos`);
 };
 
+export const getPedidosCliente = async (idCliente) => {
+  return axios.get(`${API_URL}/clientes/${idCliente}/pedidos`);
+};
+
 export const crearPedido = async (data) => {
   return axios.post(`${API_URL}/pedidos`, data);
+};
+
+export const cancelarPedido = async (idPedido) => {
+  return axios.put(`${API_URL}/pedidos/${idPedido}/cancelar`);
 };
 
 export const asignarPedido = async (idPedido, data) => {
@@ -15,7 +23,5 @@ export const asignarPedido = async (idPedido, data) => {
 };
 
 export const cambiarEstadoPedido = async (idPedido, estado) => {
-  return axios.put(`${API_URL}/pedidos/${idPedido}/estado`, {
-    estado,
-  });
+  return axios.put(`${API_URL}/pedidos/${idPedido}/estado`, { estado });
 };

@@ -23,7 +23,7 @@ export async function login(correo, contraseña) {
 }
 
 export async function obtenerPerfil() {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const r = await fetch("http://localhost:8000/me", {
     headers: {
@@ -34,6 +34,20 @@ export async function obtenerPerfil() {
   if (!r.ok) throw new Error("No autorizado");
   return r.json();
 }
+
+export const actualizarPerfil = async (idUsuario, data) => {
+  const token = sessionStorage.getItem("token");
+
+  return axios.patch(
+    `${API_URL}/usuarios/${idUsuario}`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
 
 export const registrar = async (usuario) => {
   return axios.post("http://localhost:8000/usuarios", usuario);

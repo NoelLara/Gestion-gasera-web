@@ -3,8 +3,13 @@ import axios from "axios";
 const BASE_URL = "http://localhost:8000";
 
 export const getClientes = async () => {
-  const res = await axios.get(`${BASE_URL}/usuarios`);
-  return res.data.filter(c => c.rol === "cliente");
+  const token = sessionStorage.getItem("token");
+  const res = await axios.get("http://localhost:8000/clientes", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return res.data;
 };
 
 export const crearCliente = async ({ nombre, correo, contrasena }) => {

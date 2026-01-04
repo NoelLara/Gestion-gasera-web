@@ -8,16 +8,20 @@ import Rutas from "./pages/Rutas";
 import Pedidos from "./pages/Pedidos";
 import Ventas from "./pages/Ventas";
 import CorteCaja from "./pages/CorteCaja";
-import Registrase from "./pages/Registrarse";
+import Registrarse from "./pages/Registrarse";
+
+import MisPedidos from "./pages/MisPedidos";
+import NuevoPedido from "./pages/NuevoPedido";
+import PerfilCliente from "./pages/PerfilCliente";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="registrarse" element={<Registrase />}/>
+        <Route path="/registrarse" element={<Registrarse />} />
 
-        <Route path="/" element={<MenuPrincipal />}>
+        <Route element={<MenuPrincipal />}>
           <Route path="clientes" element={<Clientes />} />
           <Route path="unidades" element={<Unidades />} />
           <Route path="vendedores" element={<Vendedores />} />
@@ -25,6 +29,12 @@ function App() {
           <Route path="pedidos" element={<Pedidos />} />
           <Route path="ventas" element={<Ventas />} />
           <Route path="corte-caja" element={<CorteCaja />} />
+
+          <Route path="cliente">
+            <Route index element={<MisPedidos />} />
+            <Route path="nuevo-pedido" element={<NuevoPedido />} />
+            <Route path="perfil" element={<PerfilCliente />} />
+          </Route>
         </Route>
       </Routes>
     </Router>

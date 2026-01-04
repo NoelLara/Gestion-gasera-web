@@ -5,21 +5,29 @@ import "./MenuPrincipal.scss";
 export default function MenuPrincipal() {
   const navigate = useNavigate();
 
-  const usuario = {
-    nombre: "Juan Pérez",
-    rol: "ADMIN",
+  const perfil = JSON.parse(sessionStorage.getItem("perfil"));
+
+  if (!perfil) {
+    navigate("/");
+    return null;
+  }
+
+  const cerrarSesion = () => {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("perfil");
+    navigate("/");
   };
 
   return (
     <div className="layout">
-      <Sidebar rol={usuario.rol} />
+      <Sidebar rol={perfil.rol} />
 
       <main className="contenido">
         <header className="topbar">
           <p>
-            Bienvenido, <strong>{usuario.nombre}</strong> ({usuario.rol})
+            Bienvenido, <strong>{perfil.nombre}</strong>
           </p>
-          <button onClick={() => navigate("/")}>Cerrar sesión</button>
+          <button onClick={cerrarSesion}>Cerrar sesión</button>
         </header>
 
         <section className="vista">

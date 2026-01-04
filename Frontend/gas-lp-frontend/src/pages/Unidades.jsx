@@ -20,7 +20,7 @@ export default function Unidades() {
   const [editar, setEditar] = useState(null);
   const [eliminar, setEliminar] = useState(null);
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const cargarUnidades = async () => {
     try {

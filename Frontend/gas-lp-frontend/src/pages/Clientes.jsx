@@ -21,7 +21,7 @@ export default function Clientes() {
 
   const handleEliminar = async (id) => {
     if (!window.confirm("¿Seguro que quieres eliminar este cliente? 😿")) return;
-    const token = localStorage.getItem("token"); 
+    const token = sessionStorage.getItem("token"); 
     try {
       await eliminarCliente(id, token);
       setClientes(clientes.filter(c => c.id !== id));

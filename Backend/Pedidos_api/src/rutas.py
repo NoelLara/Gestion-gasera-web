@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
 from db import coleccion_pedidos
+from precios import PRECIOS_CILINDROS
 from esquemas import PedidoCreate, PedidoAsignar, PedidoEstado
 import httpx
 import os
@@ -20,7 +21,7 @@ def registrar_venta_desde_pedido(pedido: dict):
     venta = {
         "idPedido": pedido["idPedido"],
         "tipoVenta": pedido["tipoPedido"],
-        "cantidad": pedido.get("cantidad"),
+        "cilindros": pedido.get("cilindros"),
         "litros": pedido.get("litros"),
         "precioTotal": pedido["precioTotal"],
         "idCliente": pedido.get("idCliente"),
@@ -41,13 +42,34 @@ def salud():
 
 @router.post("/pedidos", status_code=201)
 def crear_pedido(data: PedidoCreate):
+
     if not data.idCliente and not data.clientePublico:
         raise HTTPException(
             status_code=400,
             detail="Debe existir idCliente o clientePublico"
         )
 
+    if data.tipoPedido == "cilindro":
+        if not data.cilindros or len(data.cilindros) == 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Debe especificar los cilindros"
+            )
+
+        total = sum(
+            item.cantidad * PRECIOS_CILINDROS[item.tipoCilindro]
+            for item in data.cilindros
+        )
+
+    elif data.tipoPedido == "estacionario":
+        if not data.litros or data.litros <= 0:
+            raise HTTPException(400, "Debe especificar los litros")
+
+        PRECIO_LITRO = 12.5
+        total = data.litros * PRECIO_LITRO
+
     pedido = data.model_dump()
+    pedido["precioTotal"] = total
     pedido["idPedido"] = generar_id()
     pedido["estado"] = "pendiente"
     pedido["idRuta"] = None
@@ -58,6 +80,7 @@ def crear_pedido(data: PedidoCreate):
 
     coleccion_pedidos.insert_one(pedido)
     pedido.pop("_id", None)
+
     return pedido
 
 @router.get("/pedidos")
@@ -101,3 +124,33 @@ def cambiar_estado(idPedido: int, data: PedidoEstado):
         registrar_venta_desde_pedido(pedido_actualizado)
 
     return {"mensaje": f"Pedido marcado como {data.estado}"}
+
+@router.get("/clientes/{idCliente}/pedidos")
+def listar_pedidos_cliente(idCliente: str):
+    pedidos = list(
+        coleccion_pedidos.find(
+            {"idCliente": idCliente},
+            {"_id": 0}
+        )
+    )
+    return pedidos
+
+@router.put("/pedidos/{idPedido}/cancelar")
+def cancelar_pedido(idPedido: int):
+    pedido = coleccion_pedidos.find_one({"idPedido": idPedido})
+
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+
+    if pedido["estado"] != "pendiente":
+        raise HTTPException(
+            status_code=400,
+            detail="Solo se pueden cancelar pedidos pendientes"
+        )
+
+    coleccion_pedidos.update_one(
+        {"idPedido": idPedido},
+        {"$set": {"estado": "cancelado"}}
+    )
+
+    return {"mensaje": "Pedido cancelado correctamente"}

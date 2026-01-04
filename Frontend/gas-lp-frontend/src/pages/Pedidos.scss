@@ -1,3 +1,7 @@
+@use "sass:color";
+
+$azul-gas: #4A6FA5;
+
 .pedidos-page {
   padding: 2rem;
 }
@@ -37,5 +41,29 @@
     &.asignado { color: #4A6FA5; }
     &.atendido { color: green; }
     &.cancelado { color: red; }
+  }
+}
+
+.filtros-pedidos {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1.2rem 0 1.5rem;
+
+  select {
+    padding: 0.45rem 0.7rem;
+    border-radius: 10px;
+    border: 1px solid color.adjust($azul-gas, $lightness: 30%);
+    background: #ffffff;
+    color: $azul-gas;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $azul-gas;
+      box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.25);
+    }
   }
 }
