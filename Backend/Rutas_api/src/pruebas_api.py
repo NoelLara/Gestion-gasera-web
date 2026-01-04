@@ -2,6 +2,20 @@ import httpx
 import time
 import os
 import uuid
+import pytest
+from pymongo import MongoClient
+
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DB = os.getenv("MONGO_DB")
+
+def limpiar_bd():
+    client = MongoClient(MONGO_URI)
+    db = client[MONGO_DB]
+    db.rutas.delete_many({})
+
+@pytest.fixture(autouse=True)
+def limpiar_rutas():
+    limpiar_bd()
 
 BASE_URL = os.getenv("BASE_URL", "http://rutas_api:8003")
 
@@ -16,7 +30,6 @@ def esperar_api():
             pass
         time.sleep(1)
     raise RuntimeError("La API no respondió en el tiempo esperado")
-
 
 def test_rutas_crud():
     esperar_api()
@@ -46,9 +59,10 @@ def test_rutas_crud():
                 "lng": -99.13
             }
         ],
-        "unidades_asignadas": [1],
-        "vendedores_asignados": [101],
-        "clientes_pendientes": [201, 202]
+        
+        "unidades_asignadas": ["1"],
+        "vendedores_asignados": ["101"],
+        "clientes_pendientes": ["201", "202"]
     }
 
     r = cliente_http.post(f"{BASE_URL}/rutas/crear", json=ruta)
@@ -72,8 +86,8 @@ def test_rutas_crud():
     r = cliente_http.put(f"{BASE_URL}/rutas/{ruta_id}/clientes/201/atender")
     assert r.status_code == 200
     data = r.json()
-    assert 201 not in data["clientes_pendientes"]
-    assert 201 in data["clientes_atendidos"]
+    assert "201" not in data["clientes_pendientes"]
+    assert "201" in data["clientes_atendidos"]
 
     r = cliente_http.delete(f"{BASE_URL}/rutas/{ruta_id}")
     assert r.status_code == 200

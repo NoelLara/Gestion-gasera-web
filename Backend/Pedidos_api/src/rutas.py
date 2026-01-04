@@ -32,9 +32,9 @@ def registrar_venta_desde_pedido(pedido: dict):
     }
 
     try:
-        httpx.post(f"{VENTAS_URL}/ventas", json=venta, timeout=5)
+        httpx.post(f"{VENTAS_URL}/ventas", json=venta, timeout=10)
     except Exception as e:
-        print(f"⚠️ Error registrando venta: {e}")
+        print(f"Error registrando venta: {e}")
 
 @router.get("/salud")
 def salud():
