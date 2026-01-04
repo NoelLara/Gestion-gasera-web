@@ -7,6 +7,8 @@ $azul-gas: #4A6FA5;
   border-radius: 18px;
   padding: 1.5rem;
   box-shadow: 0 10px 30px rgba(74, 111, 165, 0.25);
+  position: relative;
+  font-family: sans-serif;
 }
 
 .modal-editar h3 {
@@ -32,11 +34,63 @@ $azul-gas: #4A6FA5;
   color: #444;
 }
 
-.campo input {
+.campo input,
+.campo select {
   padding: 0.45rem 0.6rem;
   border-radius: 10px;
   border: 1px solid #ccc;
   font-size: 0.9rem;
+}
+
+.combobox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  position: relative;
+}
+
+.combobox .tag {
+  background: $azul-gas;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.combobox .tag button {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.combobox .dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  max-height: 120px;
+  overflow-y: auto;
+  z-index: 10;
+  margin-top: 0.2rem;
+  padding: 0;
+  list-style: none;
+}
+
+.combobox .dropdown li {
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+}
+
+.combobox .dropdown li:hover {
+  background: rgba(74, 111, 165, 0.1);
 }
 
 .acciones {
