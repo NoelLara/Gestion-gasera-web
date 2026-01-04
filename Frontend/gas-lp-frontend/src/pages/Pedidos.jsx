@@ -106,7 +106,7 @@ export default function Pedidos() {
               <td>{p.tipoPedido}</td>
               <td>
                 {p.tipoPedido === "cilindro"
-                  ? `${p.cantidad} cilindros`
+                  ? (p.cilindros || []).map(c => `${c.cantidad}x${c.tipoCilindro}kg`).join(", ")
                   : `${p.litros} L`}
               </td>
               <td>${p.precioTotal}</td>

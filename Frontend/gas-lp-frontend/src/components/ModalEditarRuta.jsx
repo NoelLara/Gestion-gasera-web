@@ -22,42 +22,27 @@ export default function ModalEditarRuta({ ruta, onClose, onGuardar }) {
   };
 
   const guardar = async () => {
-    const inicio = await obtenerCoordenadas(
-    `${form.inicio_calle} ${form.inicio_numero}, Xalapa, Veracruz, México`
-    );
+    const inicio = await obtenerCoordenadas(`${form.inicio_calle} ${form.inicio_numero}, Xalapa, Veracruz, México`);
+    const fin = await obtenerCoordenadas(`${form.final_calle} ${form.final_numero}, Xalapa, Veracruz, México`);
 
-    const fin = await obtenerCoordenadas(
-    `${form.final_calle} ${form.final_numero}, Xalapa, Veracruz, México`
-    );
-
-    onGuardar({
-      ...ruta,
+    const rutaEditada = {
       nombre: form.nombre,
+      direccion_inicial: { ...inicio, calle: form.inicio_calle, numero: form.inicio_numero },
+      direccion_final: { ...fin, calle: form.final_calle, numero: form.final_numero },
+      puntos_intermedios: ruta.puntos_intermedios,
+      unidades_asignadas: form.unidades.split(",").map(n => Number(n.trim())),
+      vendedores_asignados: form.vendedores.split(",").map(n => Number(n.trim())),
+      clientes_pendientes: form.clientes.split(",").map(n => Number(n.trim()))
+    };
 
-      direccion_inicial: {
-        calle: form.inicio_calle,
-        numero: form.inicio_numero,
-        ...inicio
-      },
-
-      direccion_final: {
-        calle: form.final_calle,
-        numero: form.final_numero,
-        ...fin
-      },
-
-      unidades_asignadas: form.unidades
-        .split(",")
-        .map(n => Number(n.trim())),
-
-      vendedores_asignados: form.vendedores
-        .split(",")
-        .map(n => Number(n.trim())),
-
-      clientes_pendientes: form.clientes
-        .split(",")
-        .map(n => Number(n.trim()))
-    });
+    try {
+      const res = await actualizarRuta(ruta.id, rutaEditada);
+      onGuardar(res.data || res);
+      onClose();
+    } catch (err) {
+      console.error("Error actualizando ruta:", err);
+      alert("No se pudo actualizar la ruta");
+    }
   };
 
   return (

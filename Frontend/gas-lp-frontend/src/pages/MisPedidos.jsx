@@ -44,7 +44,7 @@ export default function MisPedidos() {
         </select>
       </div>
 
-      {pedidos.length === 0 && <p>No tienes pedidos aún 🥺</p>}
+      {pedidos.length === 0 && <p>No tienes pedidos aún</p>}
 
       {pedidosFiltrados.map(p => (
         <div key={p.idPedido} className="pedido-card">
@@ -60,7 +60,7 @@ export default function MisPedidos() {
               <span className="tipo">{p.tipoPedido}</span>
               <span className="cantidad">
                 {p.tipoPedido === "cilindro"
-                  ? `${p.cantidad} cilindros`
+                  ? (p.cilindros || []).map(c => `${c.cantidad}x${c.tipoCilindro}kg`).join(", ")
                   : `${p.litros} L`}
               </span>
             </div>
