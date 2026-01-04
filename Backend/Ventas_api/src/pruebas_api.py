@@ -4,27 +4,28 @@ import os
 from pymongo import MongoClient
 from datetime import datetime
 
-BASE_URL = os.getenv("VENTAS_URL", "http://ventas_api:8005")
-MONGO_URI = os.getenv("MONGO_URI")
-MONGO_DB = os.getenv("MONGO_DB")
+BASE_URL = os.getenv("VENTAS_URL", "http://ventas_api_test:8005")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://root:rootpassword@mongo_test:27017/")
+MONGO_DB = os.getenv("MONGO_DB", "GasAppTest_Ventas")  # Base de test
 
 client = MongoClient(MONGO_URI)
 db = client[MONGO_DB]
-coleccion_ventas = db["ventas"]
 
 def esperar_api():
-    for _ in range(15):
+    """Espera hasta 30 segundos a que la API de ventas esté disponible"""
+    for _ in range(30):
         try:
-            r = httpx.get(f"{BASE_URL}/salud")
+            r = httpx.get(f"{BASE_URL}/salud", timeout=2)
             if r.status_code == 200:
                 return
         except:
             pass
         time.sleep(1)
-    raise Exception("API de ventas no disponible")
+    raise RuntimeError("API de ventas no disponible")
 
 def limpiar_bd():
-    coleccion_ventas.delete_many({})
+    """Elimina completamente la base de datos de test"""
+    client.drop_database(MONGO_DB)
 
 def test_registrar_venta():
     esperar_api()
@@ -39,12 +40,12 @@ def test_registrar_venta():
         "idUnidad": 1
     }
 
-    r = httpx.post(f"{BASE_URL}/ventas", json=venta)
+    r = httpx.post(f"{BASE_URL}/ventas", json=venta, timeout=10)
     assert r.status_code == 201
 
     data = r.json()
     assert data["precioTotal"] == 1500
-    assert data["idVenta"] == 1
+    assert data["idVenta"] == 1  # determinístico gracias al reset completo
 
 def test_corte_diario():
     esperar_api()
@@ -58,12 +59,10 @@ def test_corte_diario():
         "idVendedor": 1,
         "idUnidad": 1
     }
-
-    httpx.post(f"{BASE_URL}/ventas", json=venta)
+    httpx.post(f"{BASE_URL}/ventas", json=venta, timeout=10)
 
     hoy = datetime.utcnow().date().isoformat()
-
-    r = httpx.get(f"{BASE_URL}/ventas/corte", params={"fecha": hoy})
+    r = httpx.get(f"{BASE_URL}/ventas/corte", params={"fecha": hoy}, timeout=10)
     assert r.status_code == 200
 
     data = r.json()
@@ -82,17 +81,16 @@ def test_reporte_fechas():
         "idVendedor": 1,
         "idUnidad": 1
     }
-
-    httpx.post(f"{BASE_URL}/ventas", json=venta)
+    httpx.post(f"{BASE_URL}/ventas", json=venta, timeout=10)
 
     inicio = datetime.utcnow().date().replace(day=1).isoformat()
     fin = datetime.utcnow().date().isoformat()
 
     r = httpx.get(
         f"{BASE_URL}/ventas/reporte",
-        params={"inicio": inicio, "fin": fin}
+        params={"inicio": inicio, "fin": fin},
+        timeout=10
     )
-
     assert r.status_code == 200
     data = r.json()
     assert data["totalVentas"] == 1

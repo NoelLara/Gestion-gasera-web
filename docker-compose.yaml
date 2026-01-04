@@ -206,29 +206,57 @@ services:
       MONGO_DB: GasAppTest_Rutas
       MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Rutas?authSource=admin
 
+  pedidos_api_test:
+      build: ./Backend/Pedidos_api
+      container_name: pedidosGas_api_test
+      restart: unless-stopped
+      environment:
+        MONGO_DB: GasAppTest_Pedidos
+        MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Pedidos?authSource=admin
+        PEDIDOS_VENTAS_URL: http://ventas_api_test:8005
+      ports:
+        - "18004:8004"
+      depends_on:
+        - mongo_test
+
   pruebas_pedidos_gas:
     build: ./Backend/Pedidos_api
     container_name: pruebas_pedidosGas_api
-    command: sh -c "sleep 15 && pytest /src/pruebas_api.py -v"
+    command: sh -c "sleep 30 && pytest /src/pruebas_api.py -v"
     depends_on:
-      - pedidos_api
+      - pedidos_api_test
+      - ventas_api_test
       - mongo_test
     volumes:
       - ./Backend/Pedidos_api/src:/src
     environment:
+      BASE_URL: http://pedidos_api_test:8004
       MONGO_DB: GasAppTest_Pedidos
       MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Pedidos?authSource=admin
+
+  ventas_api_test:
+      build: ./Backend/Ventas_api
+      container_name: ventasGas_api_test
+      restart: unless-stopped
+      environment:
+        MONGO_DB: GasAppTest_Ventas
+        MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Ventas?authSource=admin
+      ports:
+        - "18005:8005"
+      depends_on:
+        - mongo_test
 
   pruebas_ventas_gas:
     build: ./Backend/Ventas_api
     container_name: pruebas_ventasGas_api
     command: sh -c "sleep 15 && pytest /src/pruebas_api.py -v"
     depends_on:
-      - ventas_api
+      - ventas_api_test
       - mongo_test
     volumes:
       - ./Backend/Ventas_api/src:/src
     environment:
+      BASE_URL: http://ventas_api_test:8005
       MONGO_DB: GasAppTest_Ventas
       MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Ventas?authSource=admin
 
