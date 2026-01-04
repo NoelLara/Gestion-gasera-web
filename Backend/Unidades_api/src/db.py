@@ -1,17 +1,23 @@
+import os
 from pymongo import MongoClient, ASCENDING
 
-usuario = "root"
-password = "rootpassword"
-host = "mongo"
-puerto = 27017
+MONGO_URI = os.getenv(
+    "MONGO_URI",
+    "mongodb://root:rootpassword@mongo:27017/?authSource=admin"
+)
 
-uri = f"mongodb://{usuario}:{password}@{host}:{puerto}/?authSource=admin"
+MONGO_DB = os.getenv("MONGO_DB", "UnidadesDB")
 
-client = MongoClient(uri)
+client = MongoClient(MONGO_URI)
+db = client[MONGO_DB]
 
-db = client["UnidadesDB"]
 coleccion_unidades = db["unidades"]
 
-coleccion_unidades.create_index([("numero_economico", ASCENDING)], unique=True, sparse=True)
+coleccion_unidades.create_index(
+    [("numero_economico", ASCENDING)],
+    unique=True,
+    sparse=True
+)
+
 coleccion_unidades.create_index([("tipo", ASCENDING)])
 coleccion_unidades.create_index([("activo", ASCENDING)])

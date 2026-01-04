@@ -30,11 +30,9 @@ def registrar_venta(data: VentaCreate):
 
     return venta
 
-
 @router.get("/ventas")
 def listar_ventas():
     return list(coleccion_ventas.find({}, {"_id": 0}))
-
 
 @router.get("/ventas/corte")
 def corte_diario(fecha: date = Query(...)):
@@ -54,7 +52,6 @@ def corte_diario(fecha: date = Query(...)):
         "totalVentas": len(ventas),
         "montoTotal": total
     }
-
 
 @router.get("/ventas/reporte")
 def reporte_fechas(inicio: date, fin: date):

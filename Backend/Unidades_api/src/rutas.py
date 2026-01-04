@@ -25,14 +25,14 @@ def obtener_unidad_por_id(identificador: str):
 
 def verificar_token(token: str):
     """
-    Decodifica token y devuelve datos: {id, email, rol}
+    Decodifica token y devuelve datos: {id, correo, rol}
     Lanza HTTPException si inválido/expirado.
     """
     try:
         payload = jwt.decode(token, SECRET_JWT, algorithms=[ALGORITMO])
         return {
             "id": payload.get("id"),
-            "email": payload.get("email"),
+            "correo": payload.get("correo"),
             "rol": payload.get("rol")
         }
     except JWTError:
