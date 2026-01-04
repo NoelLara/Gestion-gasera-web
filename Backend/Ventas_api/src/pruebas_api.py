@@ -6,7 +6,7 @@ from datetime import datetime
 
 BASE_URL = os.getenv("VENTAS_URL", "http://ventas_api_test:8005")
 MONGO_URI = os.getenv("MONGO_URI", "mongodb://root:rootpassword@mongo_test:27017/")
-MONGO_DB = os.getenv("MONGO_DB", "GasAppTest_Ventas")  # Base de test
+MONGO_DB = os.getenv("MONGO_DB", "GasAppTest_Ventas")
 
 client = MongoClient(MONGO_URI)
 db = client[MONGO_DB]
@@ -45,7 +45,7 @@ def test_registrar_venta():
 
     data = r.json()
     assert data["precioTotal"] == 1500
-    assert data["idVenta"] == 1  # determinístico gracias al reset completo
+    assert data["idVenta"] == 1
 
 def test_corte_diario():
     esperar_api()

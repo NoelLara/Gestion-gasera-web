@@ -9,7 +9,6 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb://root:rootpassword@mongo_test:27017
 MONGO_DB = os.getenv("MONGO_DB", "GasAppTest_Pedidos")
 PEDIDOS_VENTAS_URL = os.getenv("PEDIDOS_VENTAS_URL", "http://ventas_api_test:8005")
 
-# Fixture para limpiar la colección antes de cada prueba
 @pytest.fixture(autouse=True)
 def limpiar_bd():
     client = MongoClient(MONGO_URI)

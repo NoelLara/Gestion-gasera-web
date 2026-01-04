@@ -59,9 +59,10 @@ def test_rutas_crud():
                 "lng": -99.13
             }
         ],
-        "unidades_asignadas": [1],
-        "vendedores_asignados": [101],
-        "clientes_pendientes": [201, 202]
+        
+        "unidades_asignadas": ["1"],
+        "vendedores_asignados": ["101"],
+        "clientes_pendientes": ["201", "202"]
     }
 
     r = cliente_http.post(f"{BASE_URL}/rutas/crear", json=ruta)
@@ -85,8 +86,8 @@ def test_rutas_crud():
     r = cliente_http.put(f"{BASE_URL}/rutas/{ruta_id}/clientes/201/atender")
     assert r.status_code == 200
     data = r.json()
-    assert 201 not in data["clientes_pendientes"]
-    assert 201 in data["clientes_atendidos"]
+    assert "201" not in data["clientes_pendientes"]
+    assert "201" in data["clientes_atendidos"]
 
     r = cliente_http.delete(f"{BASE_URL}/rutas/{ruta_id}")
     assert r.status_code == 200

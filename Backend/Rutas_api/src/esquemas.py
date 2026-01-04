@@ -12,10 +12,10 @@ class RutaBase(BaseModel):
     direccion_inicial: Punto
     direccion_final: Punto
     puntos_intermedios: List[Punto] = []
-    unidades_asignadas: List[int] = []
-    vendedores_asignados: List[int] = []
-    clientes_pendientes: List[int] = []
+    unidades_asignadas: List[str] = []
+    vendedores_asignados: List[str] = []
+    clientes_pendientes: List[str] = []
 
 class RutaResponse(RutaBase):
     id: str
-    clientes_atendidos: List[int] = []
+    clientes_atendidos: List[str] = []

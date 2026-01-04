@@ -21,7 +21,6 @@ def ruta_to_json(ruta) -> dict:
 
 @router.post("/crear")
 def crear_ruta(ruta: RutaBase):
-
     nueva_ruta = {
         "nombre": ruta.nombre,
         "direccion_inicial": ruta.direccion_inicial.dict(),
@@ -35,29 +34,22 @@ def crear_ruta(ruta: RutaBase):
 
     resultado = rutas_collection.insert_one(nueva_ruta)
     ruta_creada = rutas_collection.find_one({"_id": resultado.inserted_id})
-    
     return ruta_to_json(ruta_creada)
 
 @router.get("/")
 def obtener_rutas():
-
     rutas = list(rutas_collection.find())
     return [ruta_to_json(r) for r in rutas]
 
-
 @router.get("/{ruta_id}")
 def obtener_ruta(ruta_id: str):
-
     ruta = rutas_collection.find_one({"_id": ObjectId(ruta_id)})
-
     if not ruta:
         raise HTTPException(status_code=404, detail="Ruta no encontrada")
-
     return ruta_to_json(ruta)
 
 @router.put("/{ruta_id}")
 def actualizar_ruta(ruta_id: str, datos: RutaBase):
-
     updated = rutas_collection.update_one(
         {"_id": ObjectId(ruta_id)},
         {"$set": {
@@ -78,8 +70,7 @@ def actualizar_ruta(ruta_id: str, datos: RutaBase):
     return ruta_to_json(ruta_actualizada)
 
 @router.put("/{ruta_id}/clientes/{cliente_id}/atender")
-def atender_cliente(ruta_id: str, cliente_id: int):
-
+def atender_cliente(ruta_id: str, cliente_id: str):
     ruta = rutas_collection.find_one({"_id": ObjectId(ruta_id)})
 
     if not ruta:
@@ -101,7 +92,6 @@ def atender_cliente(ruta_id: str, cliente_id: int):
 
 @router.delete("/{ruta_id}")
 def eliminar_ruta(ruta_id: str):
-
     eliminado = rutas_collection.delete_one({"_id": ObjectId(ruta_id)})
 
     if eliminado.deleted_count == 0:
