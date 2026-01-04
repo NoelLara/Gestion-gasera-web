@@ -1,61 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Ventas.scss";
-
-const ventasMock = [
-  {
-    idVenta: 1,
-    idPedido: 101,
-    tipoVenta: "cilindro",
-    cantidad: 2,
-    precioTotal: 1500,
-    fechaVenta: "2025-12-14",
-    idVendedor: 3,
-    idUnidad: 2
-  },
-  {
-    idVenta: 2,
-    idPedido: 102,
-    tipoVenta: "estacionario",
-    litros: 320,
-    precioTotal: 4200,
-    fechaVenta: "2025-12-14",
-    idVendedor: 1,
-    idUnidad: 1,
-    idRuta: "R-5"
-  }
-];
+import {
+  listarVentas,
+  corteDiario
+} from "../services/ventasService";
 
 export default function Ventas() {
+  const [ventas, setVentas] = useState([]);
   const [filtroTipo, setFiltroTipo] = useState("todos");
-  const [fechaCorte, setFechaCorte] = useState("2025-12-14");
+  const [fechaCorte, setFechaCorte] = useState("");
   const [resultadoCorte, setResultadoCorte] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    cargarVentas();
+  }, []);
+
+  const cargarVentas = async () => {
+    try {
+      setLoading(true);
+      const res = await listarVentas();
+      setVentas(res.data);
+    } catch (e) {
+      console.error("Error cargando ventas", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const ventasFiltradas =
     filtroTipo === "todos"
-      ? ventasMock
-      : ventasMock.filter(v => v.tipoVenta === filtroTipo);
+      ? ventas
+      : ventas.filter(v => v.tipoVenta === filtroTipo);
 
-  const calcularCorte = () => {
-    const ventasDelDia = ventasMock.filter(
-      v => v.fechaVenta === fechaCorte
-    );
+  const calcularCorte = async () => {
+    if (!fechaCorte) return;
 
-    const montoTotal = ventasDelDia.reduce(
-      (acc, v) => acc + v.precioTotal,
-      0
-    );
-
-    setResultadoCorte({
-      totalVentas: ventasDelDia.length,
-      montoTotal
-    });
+    try {
+      const res = await corteDiario(fechaCorte);
+      setResultadoCorte(res.data);
+    } catch (e) {
+      console.error("Error en corte", e);
+      alert("No se pudo calcular el corte");
+    }
   };
 
   return (
     <div className="ventas">
       <h2>Ventas</h2>
 
-      {/* FILTROS */}
       <div className="filtros">
         <label>Tipo:</label>
         <select
@@ -68,30 +61,43 @@ export default function Ventas() {
         </select>
       </div>
 
-      {/* LISTA DE VENTAS */}
       <div className="ventas-lista">
+        {loading && <p>Cargando ventas...</p>}
+
+        {!loading && ventasFiltradas.length === 0 && (
+          <p>No hay ventas registradas</p>
+        )}
+
         {ventasFiltradas.map((venta) => (
           <div className="venta-card" key={venta.idVenta}>
             <div className="venta-header">
               <div>
                 <span className="label">Total</span>
-                <span className="total">${venta.precioTotal}</span>
+                <span className="total">
+                  ${venta.precioTotal.toFixed(2)}
+                </span>
               </div>
 
               <div className="cantidad">
-                {venta.cantidad && <span>{venta.cantidad} cilindros</span>}
-                {venta.litros && <span>{venta.litros} L</span>}
+                {venta.cantidad && (
+                  <span>{venta.cantidad} cilindros</span>
+                )}
+                {venta.litros && (
+                  <span>{venta.litros} L</span>
+                )}
               </div>
             </div>
 
             <div className="venta-body">
               <div className="fila">
                 <span>Pedido #{venta.idPedido}</span>
-                <span className="badge">{venta.tipoVenta}</span>
+                <span className="badge">
+                  {venta.tipoVenta}
+                </span>
               </div>
 
               <div className="fila fecha">
-                {new Date(venta.fechaVenta).toLocaleDateString()}
+                {new Date(venta.fechaVenta).toLocaleString()}
               </div>
 
               <div className="info">
@@ -109,9 +115,8 @@ export default function Ventas() {
         ))}
       </div>
 
-      {/* 💰 CORTE DE CAJA */}
       <div className="corte-caja">
-        <h3>💰 Corte de caja</h3>
+        <h3>Corte de caja</h3>
 
         <div className="corte-form">
           <label>Fecha:</label>
@@ -128,8 +133,16 @@ export default function Ventas() {
 
         {resultadoCorte && (
           <div className="resultado-corte">
-            <p>🧾 Ventas del día: <strong>{resultadoCorte.totalVentas}</strong></p>
-            <p>💵 Monto total: <strong>${resultadoCorte.montoTotal}</strong></p>
+            <p>
+              Ventas del día:
+              <strong> {resultadoCorte.totalVentas}</strong>
+            </p>
+            <p>
+              Monto total:
+              <strong>
+                ${resultadoCorte.montoTotal.toFixed(2)}
+              </strong>
+            </p>
           </div>
         )}
       </div>
