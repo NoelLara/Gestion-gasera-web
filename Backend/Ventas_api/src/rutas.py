@@ -71,3 +71,24 @@ def reporte_fechas(inicio: date, fin: date):
         "totalVentas": len(ventas),
         "ventas": ventas
     }
+
+@router.get("/ventas/dia")
+def ventas_por_dia(fecha: date = Query(...)):
+    inicio = datetime.combine(fecha, datetime.min.time())
+    fin = datetime.combine(fecha, datetime.max.time())
+
+    ventas = list(
+        coleccion_ventas.find(
+            {"fechaVenta": {"$gte": inicio, "$lte": fin}},
+            {"_id": 0}
+        )
+    )
+
+    if not ventas:
+        return {"fecha": fecha.isoformat(), "mensaje": "No hay ventas en esta fecha"}
+
+    return {
+        "fecha": fecha.isoformat(),
+        "totalVentas": len(ventas),
+        "ventas": ventas
+    }
