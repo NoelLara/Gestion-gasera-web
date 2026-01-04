@@ -55,3 +55,11 @@ def editar_vendedor(idVendedor: int, data: VendedorBase, _=Depends(verificar_tok
         raise HTTPException(status_code=404, detail="Vendedor no encontrado")
 
     return {"mensaje": "Actualizado correctamente"}
+
+@router.delete("/vendedores/{idVendedor}", status_code=204)
+def eliminar_vendedor(idVendedor: int, _=Depends(verificar_token)):
+    resultado = coleccion_vendedores.delete_one({"idVendedor": idVendedor})
+
+    if resultado.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Vendedor no encontrado")
+    return

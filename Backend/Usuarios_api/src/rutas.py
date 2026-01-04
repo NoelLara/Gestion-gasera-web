@@ -181,3 +181,15 @@ def crear_admin_si_no_existe():
 
     coleccion_usuarios.insert_one(admin_data)
     print("Admin creado correctamente")
+
+@router.delete("/usuarios/{id_usuario}", status_code=204)
+def eliminar_usuario(id_usuario: str, usuario_actual: dict = Depends(obtener_usuario_actual)):
+    if usuario_actual["rol"] != "administrador" and usuario_actual["id"] != id_usuario:
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    usuario = obtener_usuario_por_id(id_usuario)
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    coleccion_usuarios.delete_one({"_id": usuario["_id"]})
+    return
