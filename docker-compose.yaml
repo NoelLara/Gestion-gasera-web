@@ -128,16 +128,29 @@ services:
       MONGO_DB: GasAppTest_Usuarios
       MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Usuarios?authSource=admin
 
+  unidades_api_test:
+      build: ./Backend/Unidades_api
+      container_name: unidadesGas_api_test
+      restart: unless-stopped
+      environment:
+        MONGO_DB: GasAppTest_Unidades
+        MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Unidades?authSource=admin
+      ports:
+        - "18001:8001"
+      depends_on:
+        - mongo_test
+
   pruebas_unidades_gas:
     build: ./Backend/Unidades_api
     container_name: pruebas_unidadesGas_api
     command: sh -c "sleep 15 && pytest /src/pruebas_api.py -v"
     depends_on:
-      - unidades_api
+      - unidades_api_test
       - mongo_test
     volumes:
       - ./Backend/Unidades_api/src:/src
     environment:
+      BASE_URL: http://unidades_api_test:8001
       MONGO_DB: GasAppTest_Unidades
       MONGO_URI: mongodb://root:rootpassword@mongo_test:27017/GasAppTest_Unidades?authSource=admin
 
