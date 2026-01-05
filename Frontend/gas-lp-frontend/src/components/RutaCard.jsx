@@ -27,16 +27,16 @@ export default function RutaCard({
         <div className="listas">
           <div>
             <strong>Unidades:</strong>{" "}
-            {ruta.unidades_asignadas?.length
-              ? ruta.unidades_asignadas.join(", ")
-              : "—"}
+              {ruta.unidades_nombres?.length
+                ? ruta.unidades_nombres.join(", ")
+                : "—"}
           </div>
 
           <div>
             <strong>Vendedores:</strong>{" "}
-            {ruta.vendedores_asignados?.length
-              ? ruta.vendedores_asignados.join(", ")
-              : "—"}
+              {ruta.vendedores_nombres?.length
+                ? ruta.vendedores_nombres.join(", ")
+                : "—"}
           </div>
         </div>
       </div>

@@ -50,7 +50,7 @@ export default function Rutas() {
         });
         setTodasLasUnidades(unidades);
 
-        const resVendedores = await getVendedores();
+        const resVendedores = await getVendedores(sessionStorage.getItem("token"));
         const vendedores = (resVendedores.data || []).map(v => ({
           ...v,
           id: String(v.idVendedor),
@@ -88,6 +88,14 @@ export default function Rutas() {
     }
   };  
 
+  const mapaUnidades = Object.fromEntries(
+    todasLasUnidades.map(u => [String(u.id), u.nombre])
+  );
+
+  const mapaVendedores = Object.fromEntries(
+    todosLosVendedores.map(v => [String(v.id), v.nombre])
+  );
+
   return (
     <div className="rutas">
       <header>
@@ -98,18 +106,29 @@ export default function Rutas() {
       </header>
 
       <div className="rutas-lista">
-        {rutas.map(ruta => (
-          <RutaCard
-            key={ruta.id}
-            ruta={ruta}
-            onVerMapa={setRutaSeleccionada}
-            onEditar={setRutaAEditar}
-            onEliminar={() => setRutaAEliminar(ruta)}
-          />
-        ))}
+        {rutas.map(ruta => {
+          const rutaConNombres = {
+            ...ruta,
+            unidades_nombres: ruta.unidades_asignadas.map(
+              id => mapaUnidades[String(id)] || id
+            ),
+            vendedores_nombres: ruta.vendedores_asignados.map(
+              id => mapaVendedores[String(id)] || id
+            )
+          };
+
+          return (
+            <RutaCard
+              key={ruta.id}
+              ruta={rutaConNombres}
+              onVerMapa={setRutaSeleccionada}
+              onEditar={setRutaAEditar}
+              onEliminar={() => setRutaAEliminar(ruta)}
+            />
+          );
+        })}
       </div>
 
-      {/* Modal Crear Ruta */}
       {rutaAEditar?.modo === "crear" && (
         <ModalAgregarRuta
           unidadesDisponibles={todasLasUnidades}
