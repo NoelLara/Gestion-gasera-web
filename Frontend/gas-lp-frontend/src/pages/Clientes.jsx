@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { FiTrash2 } from "react-icons/fi";
 import { getClientes, eliminarCliente } from "../services/clientesService";
+import ModalEliminarCliente from "../components/ModalEliminarCliente";
 import "./Clientes.scss";
 
 export default function Clientes() {
   const [clientes, setClientes] = useState([]);
+  const [clienteAEliminar, setClienteAEliminar] = useState(null);
 
   useEffect(() => {
     cargarClientes();
@@ -20,11 +22,11 @@ export default function Clientes() {
   };
 
   const handleEliminar = async (id) => {
-    if (!window.confirm("¿Seguro que quieres eliminar este cliente? 😿")) return;
     const token = sessionStorage.getItem("token"); 
     try {
       await eliminarCliente(id, token);
       setClientes(clientes.filter(c => c.id !== id));
+      setClienteAEliminar(null);
     } catch (error) {
       console.error("No se pudo eliminar el cliente:", error);
     }
@@ -33,7 +35,7 @@ export default function Clientes() {
   return (
     <div className="clientes-page">
       <header>
-        <h2>Clientes 🐱</h2>
+        <h2>Clientes</h2>
       </header>
 
       <table className="tabla-clientes">
@@ -52,7 +54,7 @@ export default function Clientes() {
               <td>{c.correo}</td>
               <td>{c.telefono}</td>
               <td>
-                <button onClick={() => handleEliminar(c.id)} className="btn-eliminar">
+                <button className="btn-eliminar" onClick={() => setClienteAEliminar(c)}>
                   <FiTrash2 />
                 </button>
               </td>
@@ -60,6 +62,14 @@ export default function Clientes() {
           ))}
         </tbody>
       </table>
+
+      {clienteAEliminar && (
+        <ModalEliminarCliente
+          cliente={clienteAEliminar}
+          onCerrar={() => setClienteAEliminar(null)}
+          onEliminar={handleEliminar}
+        />
+      )}
     </div>
   );
 }

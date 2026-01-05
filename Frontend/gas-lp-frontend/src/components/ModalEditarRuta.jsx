@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FiX, FiTruck, FiUser, FiMapPin, FiAlertCircle } from "react-icons/fi";
 import { obtenerCoordenadas } from "../utils/geocoding";
 import "./ModalEditarRuta.scss";
 
@@ -11,28 +12,30 @@ export default function ModalEditarRuta({
 }) {
   const [form, setForm] = useState({
     nombre: ruta.nombre,
-
     inicio_calle: ruta.direccion_inicial.calle,
     inicio_numero: ruta.direccion_inicial.numero,
-
     final_calle: ruta.direccion_final.calle,
     final_numero: ruta.direccion_final.numero,
-
     unidades_asignadas: unidadesDisponibles.filter(u =>
       ruta.unidades_asignadas.includes(u.id)
     ),
-
     vendedores_asignados: vendedoresDisponibles.filter(v =>
       ruta.vendedores_asignados.includes(v.id)
     ),
-
     vendedor_busqueda: ""
   });
 
-  const cambiar = (campo, valor) =>
-    setForm(prev => ({ ...prev, [campo]: valor }));
+  const [errores, setErrores] = useState({
+    nombre: "",
+    inicio: "",
+    final: "",
+    unidades: "",
+    vendedores: ""
+  });
 
-  const agregarUnidad = (id) => {
+  const cambiar = (campo, valor) => setForm(prev => ({ ...prev, [campo]: valor }));
+
+  const agregarUnidad = id => {
     if (!id) return;
     const unidad = unidadesDisponibles.find(u => u.id === id);
     if (unidad && !form.unidades_asignadas.some(u => u.id === unidad.id)) {
@@ -43,14 +46,14 @@ export default function ModalEditarRuta({
     }
   };
 
-  const removerUnidad = (id) => {
+  const removerUnidad = id => {
     setForm(prev => ({
       ...prev,
       unidades_asignadas: prev.unidades_asignadas.filter(u => u.id !== id)
     }));
   };
 
-  const agregarVendedor = (vendedor) => {
+  const agregarVendedor = vendedor => {
     if (!vendedor) return;
     if (!form.vendedores_asignados.some(v => v.id === vendedor.id)) {
       setForm(prev => ({
@@ -61,7 +64,7 @@ export default function ModalEditarRuta({
     }
   };
 
-  const removerVendedor = (id) => {
+  const removerVendedor = id => {
     setForm(prev => ({
       ...prev,
       vendedores_asignados: prev.vendedores_asignados.filter(v => v.id !== id)
@@ -74,7 +77,42 @@ export default function ModalEditarRuta({
       v.nombre.toLowerCase().includes(form.vendedor_busqueda.toLowerCase())
   );
 
+  const validar = () => {
+    let tempErrores = { nombre: "", inicio: "", final: "", unidades: "", vendedores: "" };
+    let valido = true;
+
+    if (!form.nombre.trim()) {
+      tempErrores.nombre = "Debes poner un nombre para la ruta";
+      valido = false;
+    }
+
+    if (!form.inicio_calle.trim() || !form.inicio_numero.trim()) {
+      tempErrores.inicio = "Completa la dirección de inicio";
+      valido = false;
+    }
+
+    if (!form.final_calle.trim() || !form.final_numero.trim()) {
+      tempErrores.final = "Completa la dirección final";
+      valido = false;
+    }
+
+    if (!form.unidades_asignadas.length) {
+      tempErrores.unidades = "Agrega al menos una unidad";
+      valido = false;
+    }
+
+    if (!form.vendedores_asignados.length) {
+      tempErrores.vendedores = "Agrega al menos un vendedor";
+      valido = false;
+    }
+
+    setErrores(tempErrores);
+    return valido;
+  };
+
   const guardar = async () => {
+    if (!validar()) return;
+
     const inicio = await obtenerCoordenadas(
       `${form.inicio_calle} ${form.inicio_numero}, Xalapa, Veracruz, México`
     );
@@ -103,39 +141,32 @@ export default function ModalEditarRuta({
         <h3>✏️ Editar Ruta</h3>
 
         <div className="grid">
-
           <div className="campo">
             <label>Nombre</label>
             <input value={form.nombre} onChange={e => cambiar("nombre", e.target.value)} />
+            {errores.nombre && <p className="error"><FiAlertCircle /> {errores.nombre}</p>}
           </div>
 
           <div className="campo">
-            <label>Calle inicio</label>
+            <label><FiMapPin /> Calle inicio</label>
             <input value={form.inicio_calle} onChange={e => cambiar("inicio_calle", e.target.value)} />
-          </div>
-
-          <div className="campo">
-            <label>Número inicio</label>
             <input value={form.inicio_numero} onChange={e => cambiar("inicio_numero", e.target.value)} />
+            {errores.inicio && <p className="error"><FiAlertCircle /> {errores.inicio}</p>}
           </div>
 
           <div className="campo">
-            <label>Calle final</label>
+            <label><FiMapPin /> Calle final</label>
             <input value={form.final_calle} onChange={e => cambiar("final_calle", e.target.value)} />
-          </div>
-
-          <div className="campo">
-            <label>Número final</label>
             <input value={form.final_numero} onChange={e => cambiar("final_numero", e.target.value)} />
+            {errores.final && <p className="error"><FiAlertCircle /> {errores.final}</p>}
           </div>
 
           <div className="campo">
-            <label>🚚 Unidades</label>
+            <label><FiTruck /> Unidades</label>
             <div className="combobox">
               {form.unidades_asignadas.map(u => (
                 <span key={u.id} className="tag">
-                  {u.nombre}
-                  <button type="button" onClick={() => removerUnidad(u.id)}>×</button>
+                  {u.nombre} <button type="button" onClick={() => removerUnidad(u.id)}><FiX /></button>
                 </span>
               ))}
 
@@ -154,15 +185,15 @@ export default function ModalEditarRuta({
                   ))}
               </select>
             </div>
+            {errores.unidades && <p className="error"><FiAlertCircle /> {errores.unidades}</p>}
           </div>
 
           <div className="campo">
-            <label>🧑‍💼 Vendedores</label>
+            <label><FiUser /> Vendedores</label>
             <div className="combobox">
               {form.vendedores_asignados.map(v => (
                 <span key={v.id} className="tag">
-                  {v.nombre}
-                  <button type="button" onClick={() => removerVendedor(v.id)}>×</button>
+                  {v.nombre} <button type="button" onClick={() => removerVendedor(v.id)}><FiX /></button>
                 </span>
               ))}
 
@@ -182,8 +213,8 @@ export default function ModalEditarRuta({
                 </ul>
               )}
             </div>
+            {errores.vendedores && <p className="error"><FiAlertCircle /> {errores.vendedores}</p>}
           </div>
-
         </div>
 
         <div className="acciones">

@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
-import { getPedidos } from "../services/pedidosService";
+import { getPedidos, cambiarEstadoPedido } from "../services/pedidosService";
 import { getClientes } from "../services/clientesService";
 import ModalAsignarPedido from "../components/ModalAsignarPedido";
-import ModalCambiarEstado from "../components/ModalCambiarEstadoPedido";
 import "./Pedidos.scss";
 
 export default function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [pedidoAsignar, setPedidoAsignar] = useState(null);
-  const [pedidoEstado, setPedidoEstado] = useState(null);
   const [loading, setLoading] = useState(true);
   const [clientes, setClientes] = useState({});
   const [filtroEstado, setFiltroEstado] = useState("todos");
@@ -18,8 +16,6 @@ export default function Pedidos() {
     setLoading(true);
 
     const res = await getPedidos();
-    const pedidos = res.data;
-
     const clientesRes = await getClientes();
 
     const mapa = {};
@@ -28,7 +24,7 @@ export default function Pedidos() {
     });
 
     setClientes(mapa);
-    setPedidos(pedidos);
+    setPedidos(res.data);
     setLoading(false);
   };
 
@@ -41,22 +37,32 @@ export default function Pedidos() {
       ? p.clientePublico.nombre
       : clientes[p.idCliente] ?? `Cliente #${p.idCliente}`;
 
+  const cancelarPedido = async (pedido) => {
+    if (!window.confirm("¿Cancelar este pedido? 😿")) return;
+
+    try {
+      await cambiarEstadoPedido(pedido.idPedido, "cancelado");
+      cargar();
+    } catch (err) {
+      alert("No se pudo cancelar el pedido");
+    }
+  };
+
   if (loading) {
     return <p style={{ padding: "1rem" }}>⏳ Cargando pedidos...</p>;
   }
 
   const pedidosFiltrados = pedidos
-  .filter(p =>
-    filtroEstado === "todos" ? true : p.estado === filtroEstado
-  )
-  .sort((a, b) => {
-    const fechaA = new Date(a.fechaCreacion);
-    const fechaB = new Date(b.fechaCreacion);
-
-    return ordenFecha === "recientes"
-      ? fechaB - fechaA
-      : fechaA - fechaB;
-  });
+    .filter(p =>
+      filtroEstado === "todos" ? true : p.estado === filtroEstado
+    )
+    .sort((a, b) => {
+      const fechaA = new Date(a.fechaCreacion);
+      const fechaB = new Date(b.fechaCreacion);
+      return ordenFecha === "recientes"
+        ? fechaB - fechaA
+        : fechaA - fechaB;
+    });
 
   return (
     <div className="pedidos-page">
@@ -64,7 +70,7 @@ export default function Pedidos() {
 
       <div className="filtros-pedidos">
         <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
-          <option value="todos">Todos los estados</option>
+          <option value="todos">Todos</option>
           <option value="pendiente">Pendiente</option>
           <option value="asignado">Asignado</option>
           <option value="atendido">Atendido</option>
@@ -82,6 +88,7 @@ export default function Pedidos() {
           <tr>
             <th>ID</th>
             <th>Cliente</th>
+            <th>Dirección</th>
             <th>Tipo</th>
             <th>Cant.</th>
             <th>Precio</th>
@@ -91,36 +98,47 @@ export default function Pedidos() {
         </thead>
 
         <tbody>
-          {(pedidos || []).length === 0 && (
+          {pedidosFiltrados.length === 0 && (
             <tr>
-              <td colSpan="7" style={{ textAlign: "center" }}>
-                😿 No hay pedidos
+              <td colSpan="8" style={{ textAlign: "center" }}>
+                No hay pedidos
               </td>
             </tr>
           )}
 
-          {(pedidosFiltrados || []).map((p) => (
+          {pedidosFiltrados.map(p => (
             <tr key={p.idPedido}>
               <td>{p.idPedido}</td>
               <td>{nombreCliente(p)}</td>
+              <td>{p.direccion}</td>
               <td>{p.tipoPedido}</td>
               <td>
                 {p.tipoPedido === "cilindro"
-                  ? (p.cilindros || []).map(c => `${c.cantidad}x${c.tipoCilindro}kg`).join(", ")
+                  ? (p.cilindros || [])
+                      .map(c => `${c.cantidad}x${c.tipoCilindro}kg`)
+                      .join(", ")
                   : `${p.litros} L`}
               </td>
               <td>${p.precioTotal}</td>
               <td className={`estado ${p.estado}`}>{p.estado}</td>
-              <td>
+              <td className="acciones">
                 {p.estado === "pendiente" && (
-                  <button onClick={() => setPedidoAsignar(p)}>
-                    Asignar
-                  </button>
+                  <>
+                    <button className="boton-asignar" 
+                      onClick={() => setPedidoAsignar(p)}>
+                      Asignar
+                    </button>
+                    <button
+                      className="boton-cancelar"
+                      onClick={() => cancelarPedido(p)}
+                    >
+                      Cancelar
+                    </button>
+                  </>
                 )}
+
                 {p.estado === "asignado" && (
-                  <button onClick={() => setPedidoEstado(p)}>
-                    Atender
-                  </button>
+                  <span>🚚 En ruta</span>
                 )}
               </td>
             </tr>
@@ -132,14 +150,6 @@ export default function Pedidos() {
         <ModalAsignarPedido
           pedido={pedidoAsignar}
           onClose={() => setPedidoAsignar(null)}
-          onSuccess={cargar}
-        />
-      )}
-
-      {pedidoEstado && (
-        <ModalCambiarEstado
-          pedido={pedidoEstado}
-          onClose={() => setPedidoEstado(null)}
           onSuccess={cargar}
         />
       )}

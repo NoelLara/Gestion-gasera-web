@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { FiX, FiTruck, FiUser, FiMapPin } from "react-icons/fi";
 import { obtenerCoordenadas } from "../utils/geocoding";
 import "./ModalEditarRuta.scss";
 
@@ -17,6 +18,14 @@ export default function ModalAgregarRuta({
     unidades_asignadas: [],
     vendedor_busqueda: "",
     vendedores_asignados: []
+  });
+
+  const [errores, setErrores] = useState({
+    nombre: "",
+    inicio: "",
+    final: "",
+    unidades: "",
+    vendedores: ""
   });
 
   const cambiar = (campo, valor) =>
@@ -40,14 +49,13 @@ export default function ModalAgregarRuta({
     }));
   };
 
-  // --- VENDEDORES ---
   const agregarVendedor = (vendedor) => {
     if (!vendedor) return;
     if (!form.vendedores_asignados.some(v => v.id === vendedor.id)) {
       setForm(prev => ({
         ...prev,
         vendedores_asignados: [...prev.vendedores_asignados, vendedor],
-        vendedor_busqueda: "" // limpia input para poder seguir seleccionando
+        vendedor_busqueda: ""
       }));
     }
   };
@@ -65,7 +73,42 @@ export default function ModalAgregarRuta({
       v.nombre.toLowerCase().includes(form.vendedor_busqueda.toLowerCase())
   );
 
+  const validar = () => {
+    let tempErrores = { nombre: "", inicio: "", final: "", unidades: "", vendedores: "" };
+    let valido = true;
+
+    if (!form.nombre.trim()) {
+      tempErrores.nombre = "¡Debes poner un nombre para la ruta!";
+      valido = false;
+    }
+
+    if (!form.inicio_calle.trim() || !form.inicio_numero.trim()) {
+      tempErrores.inicio = "Completa la dirección de inicio";
+      valido = false;
+    }
+
+    if (!form.final_calle.trim() || !form.final_numero.trim()) {
+      tempErrores.final = "Completa la dirección final";
+      valido = false;
+    }
+
+    if (!form.unidades_asignadas.length) {
+      tempErrores.unidades = "Agrega al menos una unidad";
+      valido = false;
+    }
+
+    if (!form.vendedores_asignados.length) {
+      tempErrores.vendedores = "Agrega al menos un vendedor";
+      valido = false;
+    }
+
+    setErrores(tempErrores);
+    return valido;
+  };
+
   const guardar = async () => {
+    if (!validar()) return;
+
     const inicio = await obtenerCoordenadas(
       `${form.inicio_calle} ${form.inicio_numero}, Xalapa, Veracruz, México`
     );
@@ -90,38 +133,55 @@ export default function ModalAgregarRuta({
   return (
     <div className="modal-overlay">
       <div className="modal-editar">
-        <h3>➕ Nueva Ruta</h3>
+        <h3>Nueva Ruta</h3>
 
         <div className="grid">
-          {/* Campos de dirección */}
           <div className="campo">
             <label>Nombre</label>
-            <input placeholder="Ej: Ruta Centro" onChange={e => cambiar("nombre", e.target.value)} />
-          </div>
-          <div className="campo">
-            <label>Calle inicio</label>
-            <input placeholder="Ej: Av. Independencia" onChange={e => cambiar("inicio_calle", e.target.value)} />
-          </div>
-          <div className="campo">
-            <label>Número inicio</label>
-            <input placeholder="Ej: 123" onChange={e => cambiar("inicio_numero", e.target.value)} />
-          </div>
-          <div className="campo">
-            <label>Calle final</label>
-            <input placeholder="Ej: Calle Juárez" onChange={e => cambiar("final_calle", e.target.value)} />
-          </div>
-          <div className="campo">
-            <label>Número final</label>
-            <input placeholder="Ej: 456" onChange={e => cambiar("final_numero", e.target.value)} />
+            <input
+              placeholder="Ej: Ruta Centro"
+              value={form.nombre}
+              onChange={e => cambiar("nombre", e.target.value)}
+            />
+            {errores.nombre && <p className="error">{errores.nombre}</p>}
           </div>
 
           <div className="campo">
-            <label>🚚 Unidades</label>
+            <label>Dirección inicio</label>
+            <input
+              placeholder="Calle"
+              value={form.inicio_calle}
+              onChange={e => cambiar("inicio_calle", e.target.value)}
+            />
+            <input
+              placeholder="Número"
+              value={form.inicio_numero}
+              onChange={e => cambiar("inicio_numero", e.target.value)}
+            />
+            {errores.inicio && <p className="error">{errores.inicio}</p>}
+          </div>
+
+          <div className="campo">
+            <label>Dirección final</label>
+            <input
+              placeholder="Calle"
+              value={form.final_calle}
+              onChange={e => cambiar("final_calle", e.target.value)}
+            />
+            <input
+              placeholder="Número"
+              value={form.final_numero}
+              onChange={e => cambiar("final_numero", e.target.value)}
+            />
+            {errores.final && <p className="error">{errores.final}</p>}
+          </div>
+
+          <div className="campo">
+            <label><FiTruck /> Unidades</label>
             <div className="combobox">
               {form.unidades_asignadas.map(u => (
                 <span key={`tag-unidad-${u.id}`} className="tag">
-                  {u.nombre} 
-                  <button type="button" onClick={() => removerUnidad(u.id)}>×</button>
+                  {u.nombre} <button type="button" onClick={() => removerUnidad(u.id)}><FiX /></button>
                 </span>
               ))}
 
@@ -137,38 +197,33 @@ export default function ModalAgregarRuta({
                   .filter(u => !form.unidades_asignadas.some(a => String(a.id) === String(u.id)))
                   .map(u => (
                     <option key={`option-unidad-${u.id}`} value={u.id}>{u.nombre}</option>
-                  ))
-                }
+                  ))}
               </select>
             </div>
+            {errores.unidades && <p className="error">{errores.unidades}</p>}
           </div>
 
           <div className="campo">
-            <label>🧑‍💼 Vendedores</label>
+            <label><FiUser /> Vendedores</label>
             <div className="combobox">
               {form.vendedores_asignados.map(v => (
                 <span key={`tag-vendedor-${v.id}`} className="tag">
-                  {v.nombre} <button type="button" onClick={() => removerVendedor(v.id)}>×</button>
+                  {v.nombre} <button type="button" onClick={() => removerVendedor(v.id)}><FiX /></button>
                 </span>
               ))}
+
               <input
                 placeholder="Escribe para filtrar..."
                 value={form.vendedor_busqueda}
                 onChange={e => cambiar("vendedor_busqueda", e.target.value)}
               />
+
               {vendedoresFiltrados.length > 0 && (
                 <ul className="dropdown">
                   {vendedoresFiltrados.map((v, index) => {
-                    const safeKey =
-                      v.id !== undefined && v.id !== null
-                        ? v.id
-                        : `no-id-${index}`;
-
+                    const safeKey = v.id ?? `no-id-${index}`;
                     return (
-                      <li
-                        key={`li-vendedor-${safeKey}`}
-                        onClick={() => agregarVendedor(v)}
-                      >
+                      <li key={`li-vendedor-${safeKey}`} onClick={() => agregarVendedor(v)}>
                         {v.nombre}
                       </li>
                     );
@@ -176,8 +231,8 @@ export default function ModalAgregarRuta({
                 </ul>
               )}
             </div>
+            {errores.vendedores && <p className="error">{errores.vendedores}</p>}
           </div>
-
         </div>
 
         <div className="acciones">

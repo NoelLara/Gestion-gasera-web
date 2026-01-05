@@ -3,7 +3,6 @@
   width: 100%;
   background: white;
   padding: 2rem;
-
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -22,9 +21,8 @@
     padding: 2rem;
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr; // Siempre 1 columna para evitar huecos
     gap: 1rem 1.2rem;
   }
 
@@ -77,9 +75,9 @@
   }
 
   .tipo-pedido {
-    grid-column: 1 / -1;
     display: flex;
     gap: 0.6rem;
+    margin-top: 0.5rem;
 
     button {
       flex: 1;
@@ -102,30 +100,17 @@
     }
   }
 
-  .lista-cilindros {
+  .campo-full {
     grid-column: 1 / -1;
+    margin-top: 0.5rem;
+  }
+
+  .lista-cilindros {
     background: #f9fafc;
     border-radius: 10px;
     padding: 1rem;
     border: 1px solid #e0e0e0;
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-
-      li {
-        padding: 0.4rem 0;
-        font-size: 0.95rem;
-        display: flex;
-        justify-content: space-between;
-        border-bottom: 1px dashed #ddd;
-
-        &:last-child {
-          border-bottom: none;
-        }
-      }
-    }
+    margin-top: 0.5rem;
 
     .cilindro-item {
       display: flex;
@@ -162,12 +147,7 @@
     }
   }
 
-  .campo-full {
-    grid-column: 1 / -1;
-  }
-
   button[type="submit"] {
-    grid-column: 1 / -1;
     margin-top: 1rem;
     background: #1a73e8;
     color: white;
@@ -190,6 +170,10 @@
   @media (max-width: 768px) {
     form {
       grid-template-columns: 1fr;
+    }
+
+    .tipo-pedido {
+      flex-direction: column;
     }
   }
 }

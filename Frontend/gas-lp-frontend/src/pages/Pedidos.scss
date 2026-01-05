@@ -26,12 +26,23 @@ $azul-gas: #4A6FA5;
     background: #e9eef6;
   }
 
-  button {
-    padding: 0.3rem 0.6rem;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    background: #FFD966;
+  .boton-asignar {
+    background: #4A6FA5;
+    color: white;
+    font-weight: 600;
+
+    &:hover {
+      background: color.adjust(#4A6FA5, $lightness: -8%);
+    }
+  }
+
+  .boton-cancelar {
+    background: #e74c3c;
+    color: white;
+
+    &:hover {
+      background: color.adjust(#e74c3c, $lightness: -10%);
+    }
   }
 
   .estado {
