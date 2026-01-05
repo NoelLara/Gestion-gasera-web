@@ -11,6 +11,7 @@ class UsuarioCrear(BaseModel):
         example="+5215512345678"
     )
     rol: str = Field(..., example="cliente")
+    activo: bool = True
 
 class UsuarioRespuesta(BaseModel):
     id: str
@@ -18,6 +19,7 @@ class UsuarioRespuesta(BaseModel):
     correo: EmailStr
     telefono: str
     rol: str
+    activo: bool
 
 class UsuarioActualizar(BaseModel):
     nombre: Optional[str]
@@ -25,6 +27,7 @@ class UsuarioActualizar(BaseModel):
     contrasena: Optional[str]
     telefono: Optional[str]
     rol: Optional[str]
+    activo: Optional[bool]
 
 class Token(BaseModel):
     access_token: str

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from esquemas import VendedorBase
+from esquemas import VendedorBase, VendedorOut
 from db import coleccion_vendedores
 from seguridad import verificar_token
 
@@ -13,28 +13,33 @@ def generar_id():
 def salud():
     return {"estado": "ok"}
 
-@router.get("/vendedores")
+@router.get("/vendedores", response_model=list[VendedorOut])
 def listar_vendedores(_=Depends(verificar_token)):
     return list(coleccion_vendedores.find({}, {"_id": 0}))
 
-@router.post("/vendedores", status_code=201)
+@router.post("/vendedores", response_model=VendedorOut, status_code=201)
 def crear_vendedor(data: VendedorBase, _=Depends(verificar_token)):
+
     if coleccion_vendedores.find_one({"correo": data.correo}):
         raise HTTPException(
             status_code=400,
             detail="Ya existe un vendedor con ese correo"
         )
 
-    nuevo = data.model_dump()
-    nuevo["idVendedor"] = generar_id()
+    vendedor_doc = data.model_dump()
+    vendedor_doc["idVendedor"] = generar_id()
 
-    coleccion_vendedores.insert_one(nuevo)
-    nuevo.pop("_id", None)
+    coleccion_vendedores.insert_one(vendedor_doc)
+    vendedor_doc.pop("_id", None)
 
-    return nuevo
+    return vendedor_doc
 
 @router.put("/vendedores/{idVendedor}")
-def editar_vendedor(idVendedor: int, data: VendedorBase, _=Depends(verificar_token)):
+def editar_vendedor(
+    idVendedor: int,
+    data: VendedorBase,
+    _=Depends(verificar_token)
+):
     existente = coleccion_vendedores.find_one({
         "correo": data.correo,
         "idVendedor": {"$ne": idVendedor}
@@ -54,7 +59,7 @@ def editar_vendedor(idVendedor: int, data: VendedorBase, _=Depends(verificar_tok
     if resultado.matched_count == 0:
         raise HTTPException(status_code=404, detail="Vendedor no encontrado")
 
-    return {"mensaje": "Actualizado correctamente"}
+    return {"mensaje": "Vendedor actualizado correctamente"}
 
 @router.delete("/vendedores/{idVendedor}", status_code=204)
 def eliminar_vendedor(idVendedor: int, _=Depends(verificar_token)):
@@ -62,4 +67,5 @@ def eliminar_vendedor(idVendedor: int, _=Depends(verificar_token)):
 
     if resultado.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Vendedor no encontrado")
+
     return

@@ -74,7 +74,8 @@ def crear_usuario(datos: UsuarioCrear):
         "telefono": datos.telefono,
         "contrasena": hashear_contrasena(datos.contrasena),
         "rol": datos.rol,
-        "creado_en": datetime.utcnow()
+        "creado_en": datetime.utcnow(),
+        "activo": datos.activo
     }
 
     resultado = coleccion_usuarios.insert_one(usuario_doc)
@@ -88,7 +89,16 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     usuario = obtener_usuario_por_correo(form_data.username)
 
     if not usuario or not verificar_contrasena(form_data.password, usuario["contrasena"]):
-        raise HTTPException(status_code=400, detail="Correo o contraseña incorrectos")
+        raise HTTPException(
+            status_code=400,
+            detail="Correo o contraseña incorrectos"
+        )
+
+    if usuario["rol"] == "vendedor" and not usuario.get("activo", False):
+        raise HTTPException(
+            status_code=403,
+            detail="Vendedor inactivo. Contacta al administrador"
+        )
 
     datos_token = {
         "id": str(usuario["_id"]),
@@ -113,9 +123,22 @@ def obtener_usuario(id_usuario: str, usuario_actual: dict = Depends(obtener_usua
     return UsuarioRespuesta(**usuario)
 
 @router.patch("/usuarios/{id_usuario}", response_model=UsuarioRespuesta)
-def actualizar_usuario(id_usuario: str, datos: UsuarioActualizar, usuario_actual: dict = Depends(obtener_usuario_actual)):
-    if usuario_actual["rol"] != "administrador" and usuario_actual["id"] != id_usuario:
-        raise HTTPException(status_code=403, detail="No autorizado")
+def actualizar_usuario(
+    id_usuario: str,
+    datos: UsuarioActualizar,
+    usuario_actual: dict = Depends(obtener_usuario_actual)
+):
+    if usuario_actual["rol"] == "administrador":
+        raise HTTPException(
+            status_code=403,
+            detail="El administrador no puede modificar usuarios"
+        )
+
+    if usuario_actual["id"] != id_usuario:
+        raise HTTPException(
+            status_code=403,
+            detail="No puedes modificar otro usuario"
+        )
 
     usuario = obtener_usuario_por_id(id_usuario)
     if not usuario:
@@ -139,16 +162,21 @@ def actualizar_usuario(id_usuario: str, datos: UsuarioActualizar, usuario_actual
         actualizacion["contrasena"] = hashear_contrasena(datos.contrasena)
 
     if datos.rol:
-        roles_permitidos = {"administrador", "vendedor", "cliente", "usuario"}
-        if datos.rol not in roles_permitidos:
-            raise HTTPException(status_code=400, detail="Rol no permitido")
-        actualizacion["rol"] = datos.rol
-
-    if actualizacion:
-        coleccion_usuarios.update_one(
-            {"_id": usuario["_id"]},
-            {"$set": actualizacion}
+        raise HTTPException(
+            status_code=403,
+            detail="No está permitido cambiar el rol"
         )
+
+    if not actualizacion:
+        raise HTTPException(
+            status_code=400,
+            detail="No hay datos para actualizar"
+        )
+
+    coleccion_usuarios.update_one(
+        {"_id": usuario["_id"]},
+        {"$set": actualizacion}
+    )
 
     usuario = obtener_usuario_por_id(id_usuario)
     usuario["id"] = str(usuario["_id"])

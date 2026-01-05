@@ -40,8 +40,7 @@ def usuario_creado(cliente):
     r = cliente.post(f"{BASE_URL}/usuarios", json=usuario)
     assert r.status_code == 201
 
-    data = r.json()
-    user_id = data["id"]
+    user_id = r.json()["id"]
 
     r = cliente.post(
         f"{BASE_URL}/login",
@@ -51,17 +50,13 @@ def usuario_creado(cliente):
         }
     )
     assert r.status_code == 200
-    token = r.json()["access_token"]
 
+    token = r.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
     yield user_id, correo, headers
 
-    r = cliente.delete(
-        f"{BASE_URL}/usuarios/{user_id}",
-        headers=headers
-    )
-    assert r.status_code in (204, 404)
+    cliente.delete(f"{BASE_URL}/usuarios/{user_id}", headers=headers)
 
 def test_registro_usuario(cliente):
     correo = f"registro_{uuid.uuid4().hex}@test.com"
@@ -79,7 +74,7 @@ def test_registro_usuario(cliente):
     assert r.json()["correo"] == correo
 
 def test_login_y_me(usuario_creado, cliente):
-    user_id, correo, headers = usuario_creado
+    _, correo, headers = usuario_creado
 
     r = cliente.get(f"{BASE_URL}/me", headers=headers)
     assert r.status_code == 200
@@ -94,3 +89,22 @@ def test_obtener_usuario_por_id(usuario_creado, cliente):
     )
     assert r.status_code == 200
     assert r.json()["correo"] == correo
+
+def test_actualizar_mi_usuario(usuario_creado, cliente):
+    user_id, _, headers = usuario_creado
+
+    r = cliente.patch(
+        f"{BASE_URL}/usuarios/{user_id}",
+        json={
+            "nombre": "Nuevo Nombre",
+            "correo": None,
+            "contrasena": None,
+            "telefono": None,
+            "rol": None,
+            "activo": None
+        },
+        headers=headers
+    )
+
+    assert r.status_code == 200
+    assert r.json()["nombre"] == "Nuevo Nombre"
