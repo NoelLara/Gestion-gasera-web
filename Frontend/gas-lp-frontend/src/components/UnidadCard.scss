@@ -1,0 +1,113 @@
+@use "sass:color";
+
+$azul-gas: #4A6FA5;
+
+.unidades {
+  padding: 2rem;
+
+  h2 {
+    margin-bottom: 1.5rem;
+    color: $azul-gas;
+  }
+}
+
+.unidades-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.2rem;
+}
+
+.unidad-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 14px rgba(74, 111, 165, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(74, 111, 165, 0.25);
+  }
+}
+
+.unidad-header {
+  background: $azul-gas;
+  color: #fff;
+  padding: 1rem 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .label {
+    font-size: 0.8rem;
+    opacity: 0.85;
+  }
+
+  .total {
+    font-size: 1.6rem;
+    font-weight: bold;
+    display: block;
+  }
+
+  .cantidad {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+}
+
+.unidad-body {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  .fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+
+    .badge {
+      background: rgba(74, 111, 165, 0.15);
+      color: $azul-gas;
+      padding: 0.25rem 0.7rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+  }
+
+  .info {
+    font-size: 0.85rem;
+    color: color.adjust($azul-gas, $lightness: 15%);
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+}
+
+.unidad-actions {
+  padding: 0.8rem 1.2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+
+  button {
+    border: none;
+    border-radius: 10px;
+    padding: 0.35rem 0.8rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+
+  .editar {
+    background: rgba(74, 111, 165, 0.15);
+    color: $azul-gas;
+  }
+
+  .eliminar {
+    background: #ffdddd;
+    color: #a00;
+  }
+}

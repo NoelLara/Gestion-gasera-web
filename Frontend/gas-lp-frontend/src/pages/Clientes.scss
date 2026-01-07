@@ -1,0 +1,68 @@
+.clientes-page {
+  padding: 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h2 {
+      font-size: 1.5rem;
+    }
+
+    .btn-agregar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #FFD966; // amarillo pastel cute
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      &:hover {
+        background: #FFC107;
+      }
+    }
+  }
+
+  .tabla-clientes {
+    width: 100%;
+    border-collapse: collapse;
+    background: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+
+    th, td {
+      padding: 0.8rem 1rem;
+      text-align: left;
+    }
+
+    thead {
+      background: #4A6FA5;
+      color: #F5F5F5;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #ddd;
+      &:hover {
+        background: #e0e0e0;
+      }
+    }
+
+    .btn-editar,
+    .btn-eliminar {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      margin-right: 0.5rem;
+      color: #333;
+      &:hover {
+        color: #FF6666;
+      }
+    }
+  }
+}

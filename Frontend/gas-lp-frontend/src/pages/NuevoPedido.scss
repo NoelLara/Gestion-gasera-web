@@ -1,0 +1,195 @@
+.nuevo-pedido {
+  min-height: 100vh;
+  width: 100%;
+  background: white;
+  padding: 2rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  h2 {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  form {
+    width: 100%;
+    max-width: 900px;
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem 1.2rem;
+  }
+
+  .campo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 0.7rem 0.8rem;
+    background: #fafafa;
+
+    .icon {
+      color: #777;
+      min-width: 18px;
+    }
+
+    input,
+    select {
+      border: none;
+      flex: 1;
+      font-size: 0.95rem;
+      background: transparent;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    button {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.45rem 0.6rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+
+      &:hover {
+        background: #155bbb;
+      }
+    }
+
+    &:focus-within {
+      border-color: #1a73e8;
+    }
+  }
+
+  .tipo-pedido {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.6rem;
+
+    button {
+      flex: 1;
+      padding: 0.7rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      background: #f5f5f5;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      font-weight: bold;
+
+      &.activo {
+        background: #1a73e8;
+        color: white;
+        border-color: #1a73e8;
+      }
+    }
+  }
+
+  .lista-cilindros {
+    grid-column: 1 / -1;
+    background: #f9fafc;
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid #e0e0e0;
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        padding: 0.4rem 0;
+        font-size: 0.95rem;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px dashed #ddd;
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+
+    .cilindro-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px dashed #ddd;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .info {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.9rem;
+      }
+
+      .btn-eliminar-cilindro {
+        background: #ffdede;
+        color: #b30000;
+        border: none;
+        border-radius: 6px;
+        padding: 0.35rem 0.6rem;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: background 0.15s ease;
+
+        &:hover {
+          background: #ffbcbc;
+        }
+      }
+    }
+  }
+
+  .campo-full {
+    grid-column: 1 / -1;
+  }
+
+  button[type="submit"] {
+    grid-column: 1 / -1;
+    margin-top: 1rem;
+    background: #1a73e8;
+    color: white;
+    border: none;
+    padding: 0.9rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+
+    &:hover {
+      background: #155bbb;
+    }
+  }
+
+  @media (max-width: 768px) {
+    form {
+      grid-template-columns: 1fr;
+    }
+  }
+}

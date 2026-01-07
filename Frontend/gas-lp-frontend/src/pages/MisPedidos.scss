@@ -1,0 +1,121 @@
+@use "sass:color";
+
+$azul-gas: #4A6FA5;
+
+.filtros-pedidos {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1.2rem 0;
+
+  label {
+    font-weight: 600;
+    color: $azul-gas;
+  }
+
+  select {
+    padding: 0.4rem 0.7rem;
+    border-radius: 10px;
+    border: 1px solid color.adjust($azul-gas, $lightness: 30%);
+    background: #fff;
+    color: $azul-gas;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+      border-color: $azul-gas;
+    }
+  }
+}
+
+.pedido-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 8px 18px rgba(74, 111, 165, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 22px rgba(74, 111, 165, 0.22);
+  }
+}
+
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+
+  .pedido-id {
+    font-size: 0.85rem;
+    color: #777;
+  }
+}
+
+.estado {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: capitalize;
+
+  &.pendiente {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ff9800;
+  }
+
+  &.asignado {
+    background: rgba(74, 111, 165, 0.2);
+    color: $azul-gas;
+  }
+
+  &.atendido {
+    background: rgba(76, 175, 80, 0.2);
+    color: #2e7d32;
+  }
+
+  &.cancelado {
+    background: rgba(229, 57, 53, 0.2);
+    color: #c62828;
+  }
+}
+
+.pedido-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  .direccion {
+    font-size: 0.95rem;
+    color: #444;
+  }
+
+  .info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #666;
+
+    .tipo {
+      text-transform: capitalize;
+      font-weight: 600;
+    }
+  }
+}
+
+.btn-cancelar {
+  margin-top: 0.8rem;
+  align-self: flex-end;
+  background: #e53935;
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background: #c62828;
+  }
+}

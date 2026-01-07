@@ -221,3 +221,16 @@ def eliminar_usuario(id_usuario: str, usuario_actual: dict = Depends(obtener_usu
 
     coleccion_usuarios.delete_one({"_id": usuario["_id"]})
     return
+
+@router.get("/clientes", response_model=list[UsuarioRespuesta])
+def listar_clientes(usuario_actual: dict = Depends(obtener_usuario_actual)):
+    if usuario_actual["rol"] != "administrador":
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    clientes = []
+    for u in coleccion_usuarios.find({"rol": "cliente"}):
+        u["id"] = str(u["_id"])
+        u.pop("contrasena", None)
+        clientes.append(u)
+
+    return clientes
