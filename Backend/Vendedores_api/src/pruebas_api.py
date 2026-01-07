@@ -2,9 +2,12 @@ import httpx
 import time
 import os
 import pytest
+from pymongo import MongoClient
 
 USUARIOS_URL = os.getenv("USUARIOS_URL", "http://usuarios_api_test:8000")
 VENDEDORES_URL = os.getenv("BASE_URL", "http://vendedores_api_test:8002")
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DB = os.getenv("MONGO_DB")
 
 def esperar_api():
     for _ in range(15):
@@ -39,6 +42,17 @@ def headers_admin():
     token = login_admin()
     return {"Authorization": f"Bearer {token}"}
 
+@pytest.fixture(autouse=True)
+def limpiar_vendedores():
+    client = MongoClient(MONGO_URI)
+    db = client[MONGO_DB]
+
+    db.vendedores.delete_many({})
+
+    yield
+
+    db.vendedores.delete_many({})
+
 @pytest.fixture
 def vendedor_creado(headers_admin):
     correo = f"vendedor_{int(time.time() * 1000)}@test.com"
@@ -63,11 +77,6 @@ def vendedor_creado(headers_admin):
 
     yield vendedor_id, correo
 
-    httpx.delete(
-        f"{VENDEDORES_URL}/vendedores/{vendedor_id}",
-        headers=headers_admin,
-        timeout=5
-    )
 
 def test_crear_vendedor(headers_admin):
     correo = f"crear_{int(time.time() * 1000)}@test.com"
@@ -85,6 +94,7 @@ def test_crear_vendedor(headers_admin):
         headers=headers_admin,
         timeout=5
     )
+
     assert r.status_code == 201
     assert r.json()["correo"] == correo
 

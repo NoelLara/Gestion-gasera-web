@@ -32,8 +32,7 @@ def test_crear_pedido_cliente_publico():
     pedido = {
         "clientePublico": {"nombre": "Juan Público", "telefono": "555-1234"},
         "tipoPedido": "cilindro",
-        "cantidad": 2,
-        "precioTotal": 1500,
+        "cilindros": [{"tipoCilindro": 20, "cantidad": 2}],
         "direccion": "Calle Falsa 123",
         "lat": 19.43,
         "lng": -99.13
@@ -42,7 +41,7 @@ def test_crear_pedido_cliente_publico():
     assert r.status_code == 201
     data = r.json()
     assert data["estado"] == "pendiente"
-    assert data["precioTotal"] == 1500
+    assert data["precioTotal"] > 0
 
 def test_listar_pedidos():
     esperar_api()
