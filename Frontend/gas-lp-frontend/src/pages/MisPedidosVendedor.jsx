@@ -34,6 +34,8 @@ export default function MisPedidosVendedor() {
           <tr>
             <th>Cliente</th>
             <th>Dirección</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -50,36 +52,46 @@ export default function MisPedidosVendedor() {
 
           {pedidos.map(p => (
             <tr key={p.idPedido}>
-              <td>{p.cliente}</td>
+              <td>{p.cliente ?? "Cliente"}</td>
               <td>{p.direccion}</td>
+
+              <td>
+                {p.cilindros
+                  ? p.cilindros.reduce((sum, c) => sum + c.cantidad, 0)
+                  : p.litros}
+              </td>
+
+              <td>${p.precioTotal}</td>
+
               <td className={`estado ${p.estado}`}>{p.estado}</td>
+
               <td>
                 {p.estado === "asignado" && (
-                  <>
+                  <div className="acciones-pedido">
                     <button
-                      className="boton-asignar"
+                      className="btn-atender"
                       onClick={() => cambiarEstado(p.idPedido, "atendido")}
                     >
-                      ✅ Atendido
+                      Atendido
                     </button>
 
                     <button
-                      className="boton-cancelar"
+                      className="btn-cancelar"
                       onClick={() => cambiarEstado(p.idPedido, "cancelado")}
                     >
-                      ❌ Cancelar
+                      Cancelar
                     </button>
 
                     <button
-                      className="boton-asignar"
+                      className="btn-ruta"
                       onClick={async () => {
                         const res = await obtenerRuta(p.idRuta);
                         setRutaSeleccionada(res.data);
                       }}
                     >
-                      🗺️ Ver ruta
+                      Ver ruta
                     </button>
-                  </>
+                  </div>
                 )}
               </td>
             </tr>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { getPedidos, cambiarEstadoPedido } from "../services/pedidosService";
-import { getClientes } from "../services/clientesService";
 import ModalAsignarPedido from "../components/ModalAsignarPedido";
 import "./Pedidos.scss";
 
@@ -8,7 +7,6 @@ export default function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [pedidoAsignar, setPedidoAsignar] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [clientes, setClientes] = useState({});
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [ordenFecha, setOrdenFecha] = useState("recientes");
 
@@ -16,20 +14,8 @@ export default function Pedidos() {
     setLoading(true);
 
     const res = await getPedidos();
+      console.log("PEDIDOS:", res.data);
     setPedidos(res.data);
-
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-    if (usuario?.rol === "administrador") {
-      const clientesRes = await getClientes();
-
-      const mapa = {};
-      clientesRes.forEach(c => {
-        mapa[c.id] = c.nombre;
-      });
-
-      setClientes(mapa);
-    }
 
     setLoading(false);
   };
@@ -39,9 +25,9 @@ export default function Pedidos() {
   }, []);
 
   const nombreCliente = (p) =>
-    p.clientePublico
-      ? p.clientePublico.nombre
-      : clientes[p.idCliente] ?? "Cliente registrado";
+    p.cliente
+      ?? p.clientePublico?.nombre
+      ?? "Cliente";
 
   const cancelarPedido = async (pedido) => {
     if (!window.confirm("¿Cancelar este pedido? 😿")) return;

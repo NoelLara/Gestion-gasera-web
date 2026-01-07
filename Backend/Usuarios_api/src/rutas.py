@@ -331,3 +331,14 @@ def admin_actualizar_vendedor(
     usuario.pop("contrasena", None)
 
     return UsuarioRespuesta(**usuario)
+
+@router.get("/usuarios/interno/{id_usuario}")
+def obtener_usuario_interno(id_usuario: str):
+    usuario = obtener_usuario_por_id(id_usuario)
+    if not usuario:
+        raise HTTPException(404, "Usuario no encontrado")
+
+    return {
+        "id": str(usuario["_id"]),
+        "nombre": usuario["nombre"]
+    }

@@ -119,3 +119,54 @@ $azul-gas: #4A6FA5;
     background: #c62828;
   }
 }
+
+.btn-asignar {
+    margin-top: 0.8rem;
+  align-self: flex-end;
+  background: #4A6FA5;
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background: #4A6FA5;
+  }
+}
+
+.btn-atender {
+    margin-top: 0.8rem;
+  align-self: flex-end;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background: #388e3c;
+  }
+}
+
+.btn-ruta {
+    margin-top: 0.8rem;
+  align-self: flex-end;
+  background: #4A6FA5;
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background: #4A6FA5;
+  }
+}
+
+.acciones-pedido {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}

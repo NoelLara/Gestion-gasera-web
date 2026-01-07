@@ -13,6 +13,11 @@ VENTAS_URL = os.getenv(
     "http://ventas_api:8005"
 )
 
+CLIENTES_URL = os.getenv(
+    "PEDIDOS_CLIENTES_URL",
+    "http://usuarios_api:8000"
+)
+
 def generar_id():
     ultimo = coleccion_pedidos.find_one(sort=[("idPedido", -1)])
     return (ultimo["idPedido"] + 1) if ultimo else 1
@@ -83,10 +88,6 @@ def crear_pedido(data: PedidoCreate):
 
     return pedido
 
-@router.get("/pedidos")
-def listar_pedidos():
-    return list(coleccion_pedidos.find({}, {"_id": 0}))
-
 @router.put("/pedidos/{idPedido}/asignar")
 def asignar_pedido(idPedido: int, data: PedidoAsignar):
     actualizacion = {k: v for k, v in data.model_dump().items() if v is not None}
@@ -125,24 +126,62 @@ def cambiar_estado(idPedido: int, data: PedidoEstado):
 
     return {"mensaje": f"Pedido marcado como {data.estado}"}
 
-@router.get("/clientes/{idCliente}/pedidos")
-def listar_pedidos_cliente(idCliente: str):
-    pedidos = list(
-        coleccion_pedidos.find(
-            {"idCliente": idCliente},
-            {"_id": 0}
-        )
-    )
+@router.get("/pedidos")
+def listar_pedidos():
+    pedidos = list(coleccion_pedidos.find({}, {"_id": 0}))
+
+    with httpx.Client(timeout=5) as client:
+        for p in pedidos:
+            if p.get("idCliente"):
+                try:
+                    res = client.get(
+                        f"{CLIENTES_URL}/usuarios/interno/{p['idCliente']}"
+                    )
+                    if res.status_code == 200:
+                        data = res.json()
+
+                        p["cliente"] = (
+                            data.get("nombre")
+                            or data.get("perfil", {}).get("nombre")
+                            or data.get("usuario", {}).get("nombre")
+                            or "Cliente"
+                        )
+                    else:
+                        p["cliente"] = "Cliente"
+                except:
+                    p["cliente"] = "Cliente"
+            else:
+                p["cliente"] = p.get(
+                    "clientePublico", {}
+                ).get("nombre", "Cliente público")
+
     return pedidos
 
 @router.get("/vendedores/{id_vendedor}/pedidos")
-def obtener_pedidos_vendedor( id_vendedor: int):
+def obtener_pedidos_vendedor(id_vendedor: int):
     pedidos = list(
-    coleccion_pedidos.find(
-        {"idVendedor": id_vendedor},
-        {"_id": 0}
+        coleccion_pedidos.find(
+            {"idVendedor": id_vendedor},
+            {"_id": 0}
         )
     )
+
+    with httpx.Client(timeout=5) as client:
+        for p in pedidos:
+            if p.get("idCliente"):
+                try:
+                    res = client.get(
+                        f"{CLIENTES_URL}/usuarios/interno/{p['idCliente']}"
+                    )
+                    if res.status_code == 200:
+                        cliente = res.json()
+                        p["cliente"] = cliente["nombre"]
+                    else:
+                        p["cliente"] = "Cliente"
+                except:
+                    p["cliente"] = "Cliente"
+            else:
+                p["cliente"] = p.get("clientePublico", {}).get("nombre", "Cliente público")
 
     return pedidos
 
