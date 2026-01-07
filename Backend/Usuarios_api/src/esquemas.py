@@ -13,6 +13,12 @@ class UsuarioCrear(BaseModel):
     rol: str = Field(..., example="cliente")
     activo: bool = True
 
+class UsuarioVendedorCrear(BaseModel):
+    nombre: str
+    correo: EmailStr
+    telefono: str
+    activo: bool = True
+
 class UsuarioRespuesta(BaseModel):
     id: str
     nombre: str
@@ -22,12 +28,17 @@ class UsuarioRespuesta(BaseModel):
     activo: bool
 
 class UsuarioActualizar(BaseModel):
-    nombre: Optional[str]
-    correo: Optional[EmailStr]
-    contrasena: Optional[str]
-    telefono: Optional[str]
-    rol: Optional[str]
-    activo: Optional[bool]
+    nombre: Optional[str] = None
+    correo: Optional[EmailStr] = None
+    telefono: Optional[str] = None
+    contrasena: Optional[str] = None
+    activo: Optional[bool] = None
+
+class UsuarioVendedorActualizar(BaseModel):
+    nombre: Optional[str] = None
+    correo: Optional[EmailStr] = None
+    telefono: Optional[str] = None
+    activo: Optional[bool] = None
 
 class Token(BaseModel):
     access_token: str

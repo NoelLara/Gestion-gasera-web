@@ -43,53 +43,47 @@ def headers_admin():
 def vendedor_creado(headers_admin):
     correo = f"vendedor_{int(time.time() * 1000)}@test.com"
 
-    vendedor = {
+    payload = {
         "nombre": "Vendedor Prueba",
-        "telefono": "5512345678",
         "correo": correo,
+        "telefono": "5512345678",
+        "rol": "vendedor",
         "activo": True
     }
 
     r = httpx.post(
-        f"{VENDEDORES_URL}/vendedores",
-        json=vendedor,
+        f"{USUARIOS_URL}/usuarios/vendedor",
+        json=payload,
         headers=headers_admin,
         timeout=5
     )
     assert r.status_code == 201
 
-    data = r.json()
-    vendedor_id = data["idVendedor"]
-
-    yield vendedor_id, correo
-
-    httpx.delete(
-        f"{VENDEDORES_URL}/vendedores/{vendedor_id}",
-        headers=headers_admin,
-        timeout=5
-    )
+    yield correo
 
 def test_crear_vendedor(headers_admin):
     correo = f"crear_{int(time.time() * 1000)}@test.com"
 
-    vendedor = {
+    payload = {
         "nombre": "Vendedor Crear",
-        "telefono": "5599999999",
         "correo": correo,
+        "telefono": "5599999999",
+        "rol": "vendedor",
         "activo": True
     }
 
     r = httpx.post(
-        f"{VENDEDORES_URL}/vendedores",
-        json=vendedor,
+        f"{USUARIOS_URL}/usuarios/vendedor",
+        json=payload,
         headers=headers_admin,
         timeout=5
     )
+
     assert r.status_code == 201
     assert r.json()["correo"] == correo
 
 def test_listar_vendedores(vendedor_creado, headers_admin):
-    _, correo = vendedor_creado
+    correo = vendedor_creado
 
     r = httpx.get(
         f"{VENDEDORES_URL}/vendedores",
@@ -103,23 +97,24 @@ def test_listar_vendedores(vendedor_creado, headers_admin):
 def test_no_permitir_correo_duplicado(headers_admin):
     correo = f"dup_{int(time.time() * 1000)}@test.com"
 
-    vendedor = {
+    payload = {
         "nombre": "Vendedor Uno",
-        "telefono": "5511111111",
         "correo": correo,
+        "telefono": "5511111111",
+        "rol": "vendedor",
         "activo": True
     }
 
     r1 = httpx.post(
-        f"{VENDEDORES_URL}/vendedores",
-        json=vendedor,
+        f"{USUARIOS_URL}/usuarios/vendedor",
+        json=payload,
         headers=headers_admin
     )
     assert r1.status_code == 201
 
     r2 = httpx.post(
-        f"{VENDEDORES_URL}/vendedores",
-        json=vendedor,
+        f"{USUARIOS_URL}/usuarios/vendedor",
+        json=payload,
         headers=headers_admin
     )
     assert r2.status_code == 400

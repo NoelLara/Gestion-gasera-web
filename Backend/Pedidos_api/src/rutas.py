@@ -135,6 +135,17 @@ def listar_pedidos_cliente(idCliente: str):
     )
     return pedidos
 
+@router.get("/vendedores/{id_vendedor}/pedidos")
+def obtener_pedidos_vendedor( id_vendedor: int):
+    pedidos = list(
+    coleccion_pedidos.find(
+        {"idVendedor": id_vendedor},
+        {"_id": 0}
+        )
+    )
+
+    return pedidos
+
 @router.put("/pedidos/{idPedido}/cancelar")
 def cancelar_pedido(idPedido: int):
     pedido = coleccion_pedidos.find_one({"idPedido": idPedido})

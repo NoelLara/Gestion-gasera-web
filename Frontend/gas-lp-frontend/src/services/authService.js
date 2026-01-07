@@ -1,13 +1,13 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/login";
+const API_URL = "http://localhost:8000";
 
 export async function login(correo, contraseña) {
   const formData = new URLSearchParams();
   formData.append("username", correo);
   formData.append("password", contraseña);
 
-  const r = await fetch(API_URL, {
+  const r = await fetch(`${API_URL}/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"

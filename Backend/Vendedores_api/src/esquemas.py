@@ -10,6 +10,13 @@ class VendedorBase(BaseModel):
     )
     correo: EmailStr
     activo: bool = True
+    idUsuario: str
 
 class VendedorOut(VendedorBase):
     idVendedor: int
+
+class VendedorUpdate(BaseModel):
+    nombre: str
+    telefono: str
+    correo: EmailStr
+    activo: bool

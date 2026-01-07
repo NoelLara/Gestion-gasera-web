@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from esquemas import UsuarioCrear, UsuarioRespuesta, UsuarioActualizar, Token, TokenDatos
+from esquemas import UsuarioCrear, UsuarioRespuesta, UsuarioActualizar, Token, TokenDatos, UsuarioVendedorCrear, UsuarioVendedorActualizar
 from db import coleccion_usuarios
 from passlib.context import CryptContext
 from jose import jwt, JWTError
@@ -8,6 +8,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from bson import ObjectId
+import httpx
 
 load_dotenv()
 
@@ -19,6 +20,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 router = APIRouter()
+
+VENDEDORES_URL = "http://vendedoresGas_api:8002"
 
 def hashear_contrasena(contrasena: str) -> str:
     return pwd_context.hash(contrasena)
@@ -103,7 +106,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     datos_token = {
         "id": str(usuario["_id"]),
         "correo": usuario["correo"],
-        "rol": usuario["rol"]
+        "rol": usuario["rol"],
+        "activo": usuario["activo"]
     }
 
     token = crear_token(datos_token)
@@ -204,7 +208,8 @@ def crear_admin_si_no_existe():
         "telefono": "2281234567",
         "contrasena": hashear_contrasena("admin123"),
         "rol": "administrador",
-        "creado_en": datetime.utcnow()
+        "creado_en": datetime.utcnow(),
+        "activo": True
     }
 
     coleccion_usuarios.insert_one(admin_data)
@@ -234,3 +239,95 @@ def listar_clientes(usuario_actual: dict = Depends(obtener_usuario_actual)):
         clientes.append(u)
 
     return clientes
+
+@router.post("/usuarios/vendedor", response_model=UsuarioRespuesta, status_code=201)
+def crear_usuario_y_vendedor(
+    datos: UsuarioVendedorCrear,
+    usuario_actual: dict = Depends(obtener_usuario_actual),
+    token: str = Depends(oauth2_scheme)
+):
+    if usuario_actual["rol"] != "administrador":
+        raise HTTPException(status_code=403, detail="Solo admin puede crear vendedores")
+
+    if coleccion_usuarios.find_one({"correo": datos.correo}):
+        raise HTTPException(status_code=400, detail="Correo ya registrado")
+
+    contrasena_predeterminada = "vendedor123"
+    usuario_doc = {
+        "nombre": datos.nombre,
+        "correo": datos.correo,
+        "telefono": datos.telefono,
+        "contrasena": hashear_contrasena(contrasena_predeterminada),
+        "rol": "vendedor",
+        "creado_en": datetime.utcnow(),
+        "activo": datos.activo
+    }
+
+    resultado = coleccion_usuarios.insert_one(usuario_doc)
+    usuario_id = str(resultado.inserted_id)
+
+    vendedor_payload = {
+        "nombre": datos.nombre,
+        "correo": datos.correo,
+        "telefono": datos.telefono,
+        "activo": datos.activo,
+        "idUsuario": usuario_id
+    }
+
+    try:
+        with httpx.Client(timeout=5) as client:
+            r = client.post(
+                f"{VENDEDORES_URL}/vendedores",
+                json=vendedor_payload,
+                headers={
+                    "Authorization": f"Bearer {token}"
+                }
+            )
+
+            if r.status_code != 201:
+                coleccion_usuarios.delete_one({"_id": resultado.inserted_id})
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"No se pudo crear vendedor: {r.text}"
+                )
+
+    except Exception as e:
+        coleccion_usuarios.delete_one({"_id": resultado.inserted_id})
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error creando vendedor: {str(e)}"
+        )
+
+    usuario_doc["id"] = usuario_id
+    usuario_doc.pop("contrasena", None)
+
+    return UsuarioRespuesta(**usuario_doc)
+
+@router.patch("/usuarios/vendedor/{id_usuario}", response_model=UsuarioRespuesta)
+def admin_actualizar_vendedor(
+    id_usuario: str,
+    datos: UsuarioVendedorActualizar,
+    usuario_actual: dict = Depends(obtener_usuario_actual)
+):
+    if usuario_actual["rol"] != "administrador":
+        raise HTTPException(403, detail="Solo admin")
+
+    usuario = obtener_usuario_por_id(id_usuario)
+    if not usuario:
+        raise HTTPException(404, detail="Usuario no encontrado")
+
+    actualizacion = datos.model_dump(exclude_none=True)
+
+    if not actualizacion:
+        raise HTTPException(400, detail="Nada para actualizar")
+
+    coleccion_usuarios.update_one(
+        {"_id": usuario["_id"]},
+        {"$set": actualizacion}
+    )
+
+    usuario = obtener_usuario_por_id(id_usuario)
+    usuario["id"] = str(usuario["_id"])
+    usuario.pop("contrasena", None)
+
+    return UsuarioRespuesta(**usuario)

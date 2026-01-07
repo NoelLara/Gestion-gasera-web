@@ -38,7 +38,7 @@ export default function Login() {
       if (perfil.rol === "administrador") {
         navigate("/clientes");
       } else if (perfil.rol === "vendedor") {
-        navigate("/pedidos");
+        navigate("/vendedor/pedidos");
       } else if (perfil.rol === "cliente") {
         sessionStorage.setItem("idCliente", perfil.id);
         navigate("/cliente");

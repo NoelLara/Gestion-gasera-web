@@ -14,6 +14,8 @@ import MisPedidos from "./pages/MisPedidos";
 import NuevoPedido from "./pages/NuevoPedido";
 import PerfilCliente from "./pages/PerfilCliente";
 
+import MisPedidosVendedor from "./pages/MisPedidosVendedor";
+
 function App() {
   return (
     <Router>
@@ -34,6 +36,10 @@ function App() {
             <Route index element={<MisPedidos />} />
             <Route path="nuevo-pedido" element={<NuevoPedido />} />
             <Route path="perfil" element={<PerfilCliente />} />
+          </Route>
+
+          <Route path="vendedor">
+            <Route path="pedidos" element={<MisPedidosVendedor />} />
           </Route>
         </Route>
       </Routes>

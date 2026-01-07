@@ -3,7 +3,7 @@ import "./Vendedores.scss";
 import { FiEdit, FiTrash2, FiPlus } from "react-icons/fi";
 import ModalVendedor from "../components/ModalVendedor";
 import ModalEliminarVendedor from "../components/ModalEliminarVendedor";
-import { getVendedores, crearVendedor, editarVendedor } from "../services/vendedoresService";
+import { getVendedores, crearVendedor, editarVendedor, crearUsuarioVendedor } from "../services/vendedoresService";
 
 export default function Vendedores() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -32,10 +32,20 @@ export default function Vendedores() {
   const guardarVendedor = async (data) => {
     try {
       if (vendedorEditar) {
-        await editarVendedor(vendedorEditar.idVendedor, data);
+        await editarVendedor(vendedorEditar.idVendedor, {
+          nombre: data.nombre,
+          correo: data.correo,
+          telefono: data.telefono,
+          activo: data.activo,
+        });
       } else {
-        await crearVendedor(data);
-      }
+      await crearUsuarioVendedor({
+        nombre: data.nombre,
+        correo: data.correo,
+        telefono: data.telefono,
+        activo: data.activo,
+      });
+    }
 
       await cargarVendedores();
       setModalOpen(false);

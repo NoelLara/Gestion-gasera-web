@@ -16,15 +16,21 @@ export default function Pedidos() {
     setLoading(true);
 
     const res = await getPedidos();
-    const clientesRes = await getClientes();
-
-    const mapa = {};
-    clientesRes.forEach(c => {
-      mapa[c.id] = c.nombre;
-    });
-
-    setClientes(mapa);
     setPedidos(res.data);
+
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+    if (usuario?.rol === "administrador") {
+      const clientesRes = await getClientes();
+
+      const mapa = {};
+      clientesRes.forEach(c => {
+        mapa[c.id] = c.nombre;
+      });
+
+      setClientes(mapa);
+    }
+
     setLoading(false);
   };
 
@@ -35,7 +41,7 @@ export default function Pedidos() {
   const nombreCliente = (p) =>
     p.clientePublico
       ? p.clientePublico.nombre
-      : clientes[p.idCliente] ?? `Cliente #${p.idCliente}`;
+      : clientes[p.idCliente] ?? "Cliente registrado";
 
   const cancelarPedido = async (pedido) => {
     if (!window.confirm("¿Cancelar este pedido? 😿")) return;

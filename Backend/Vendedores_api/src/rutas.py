@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends
-from esquemas import VendedorBase, VendedorOut
+from fastapi import APIRouter, HTTPException, Depends, Header
+from esquemas import VendedorBase, VendedorOut, VendedorUpdate
 from db import coleccion_vendedores
 from seguridad import verificar_token
+import httpx
 
 router = APIRouter()
 
@@ -37,27 +38,42 @@ def crear_vendedor(data: VendedorBase, _=Depends(verificar_token)):
 @router.put("/vendedores/{idVendedor}")
 def editar_vendedor(
     idVendedor: int,
-    data: VendedorBase,
+    data: VendedorUpdate,
+    authorization: str = Header(...),
     _=Depends(verificar_token)
 ):
-    existente = coleccion_vendedores.find_one({
-        "correo": data.correo,
-        "idVendedor": {"$ne": idVendedor}
-    })
+    vendedor = coleccion_vendedores.find_one({"idVendedor": idVendedor})
+    if not vendedor:
+        raise HTTPException(status_code=404, detail="Vendedor no encontrado")
 
-    if existente:
-        raise HTTPException(
-            status_code=400,
-            detail="El correo ya está en uso por otro vendedor"
-        )
-
-    resultado = coleccion_vendedores.update_one(
+    coleccion_vendedores.update_one(
         {"idVendedor": idVendedor},
         {"$set": data.model_dump()}
     )
 
-    if resultado.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Vendedor no encontrado")
+    try:
+        with httpx.Client(timeout=5) as client:
+            r = client.patch(
+                f"http://usuarios_api:8000/usuarios/vendedor/{vendedor['idUsuario']}",
+                json={
+                    "nombre": data.nombre,
+                    "correo": data.correo,
+                    "telefono": data.telefono,
+                    "activo": data.activo
+                },
+                headers={
+                    "Authorization": authorization
+                }
+            )
+
+            if r.status_code != 200:
+                raise Exception(r.text)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error actualizando usuario: {str(e)}"
+        )
 
     return {"mensaje": "Vendedor actualizado correctamente"}
 
@@ -69,3 +85,18 @@ def eliminar_vendedor(idVendedor: int, _=Depends(verificar_token)):
         raise HTTPException(status_code=404, detail="Vendedor no encontrado")
 
     return
+
+@router.get("/vendedores/usuario/{idUsuario}", response_model=VendedorOut)
+def obtener_vendedor_por_usuario(
+    idUsuario: str,
+    _=Depends(verificar_token)
+):
+    vendedor = coleccion_vendedores.find_one(
+        {"idUsuario": idUsuario},
+        {"_id": 0}
+    )
+
+    if not vendedor:
+        raise HTTPException(404, "Vendedor no encontrado")
+
+    return vendedor

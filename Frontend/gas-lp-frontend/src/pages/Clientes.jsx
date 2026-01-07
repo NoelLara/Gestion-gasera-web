@@ -67,7 +67,7 @@ export default function Clientes() {
         <ModalEliminarCliente
           cliente={clienteAEliminar}
           onCerrar={() => setClienteAEliminar(null)}
-          onEliminar={handleEliminar}
+          onConfirmar={handleEliminar}
         />
       )}
     </div>

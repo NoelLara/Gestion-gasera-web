@@ -80,6 +80,20 @@ export default function Sidebar({ rol }) {
           </>
         )}
 
+        {rol === "vendedor" && (
+          <>
+            <button onClick={() => navigate("/vendedor/pedidos")}>
+              <FiPackage className="icon" size={24} />
+              <span className="text">Mis pedidos</span>
+            </button>
+
+            <button onClick={() => navigate("/vendedor/perfil")}>
+              <FiUser className="icon" size={24} />
+              <span className="text">Mi perfil</span>
+            </button>
+          </>
+        )}
+
       </nav>
     </aside>
   );

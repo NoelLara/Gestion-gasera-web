@@ -2,6 +2,16 @@ import axios from "axios";
 
 const API_URL = "http://localhost:8004";
 
+const authHeaders = () => {
+  const token = sessionStorage.getItem("token");
+
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
+
 export const getPedidos = async () => {
   return axios.get(`${API_URL}/pedidos`);
 };
@@ -25,3 +35,9 @@ export const asignarPedido = async (idPedido, data) => {
 export const cambiarEstadoPedido = async (idPedido, estado) => {
   return axios.put(`${API_URL}/pedidos/${idPedido}/estado`, { estado });
 };
+
+export const getPedidosVendedor = (idVendedor) =>
+  axios.get(`${API_URL}/vendedores/${idVendedor}/pedidos`, authHeaders());
+
+export const actualizarEstadoPedido = (idPedido, estado) =>
+  axios.put(`${API_URL}/pedidos/${idPedido}/estado`, { estado }, authHeaders());
