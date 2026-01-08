@@ -204,6 +204,7 @@ def crear_admin_si_no_existe():
         "telefono": "2281234567",
         "contrasena": hashear_contrasena("admin123"),
         "rol": "administrador",
+        "activo": True,
         "creado_en": datetime.utcnow()
     }
 

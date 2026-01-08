@@ -21,3 +21,4 @@ coleccion_unidades.create_index(
 
 coleccion_unidades.create_index([("tipo", ASCENDING)])
 coleccion_unidades.create_index([("activo", ASCENDING)])
+coleccion_asignaciones = db["asignaciones_unidad"]

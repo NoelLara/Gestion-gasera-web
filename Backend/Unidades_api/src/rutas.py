@@ -1,6 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends, status
-from esquemas import UnidadCrear, UnidadRespuesta, UnidadActualizar
-from db import coleccion_unidades
+from esquemas import (
+    UnidadCrear,
+    UnidadRespuesta,
+    UnidadActualizar,
+    AsignacionUnidadRequest
+)
+from db import coleccion_unidades, coleccion_asignaciones
 from typing import List
 from bson import ObjectId
 from fastapi.security import OAuth2PasswordBearer
@@ -24,10 +29,6 @@ def obtener_unidad_por_id(identificador: str):
     return coleccion_unidades.find_one({"_id": ObjectId(identificador)})
 
 def verificar_token(token: str):
-    """
-    Decodifica token y devuelve datos: {id, correo, rol}
-    Lanza HTTPException si inválido/expirado.
-    """
     try:
         payload = jwt.decode(token, SECRET_JWT, algorithms=[ALGORITMO])
         return {
@@ -36,12 +37,15 @@ def verificar_token(token: str):
             "rol": payload.get("rol")
         }
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido o expirado")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado"
+        )
 
 async def obtener_usuario_actual(token: str = Depends(oauth2_scheme)):
     datos = verificar_token(token)
-    if datos.get("id") is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales inválidas")
+    if not datos.get("id"):
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
     return datos
 
 def es_admin(usuario: dict) -> bool:
@@ -50,8 +54,31 @@ def es_admin(usuario: dict) -> bool:
 def es_vendedor(usuario: dict) -> bool:
     return usuario.get("rol") == "vendedor"
 
+def cerrar_asignaciones_activas(idUnidad: str):
+    coleccion_asignaciones.update_many(
+        {"idUnidad": idUnidad, "activo": True},
+        {"$set": {
+            "activo": False,
+            "fecha_fin": datetime.utcnow()
+        }}
+    )
+
+def asignar_vendedores(idUnidad: str, vendedores: List[int]):
+    ahora = datetime.utcnow()
+    for idVendedor in vendedores:
+        coleccion_asignaciones.insert_one({
+            "idUnidad": idUnidad,
+            "idVendedor": idVendedor,
+            "fecha_inicio": ahora,
+            "fecha_fin": None,
+            "activo": True
+        })
+
 @router.post("/", response_model=UnidadRespuesta, status_code=201)
-def crear_unidad(datos: UnidadCrear, usuario_actual: dict = Depends(obtener_usuario_actual)):
+def crear_unidad(
+    datos: UnidadCrear,
+    usuario_actual: dict = Depends(obtener_usuario_actual)
+):
     if not (es_admin(usuario_actual) or es_vendedor(usuario_actual)):
         raise HTTPException(status_code=403, detail="No autorizado")
 
@@ -59,10 +86,7 @@ def crear_unidad(datos: UnidadCrear, usuario_actual: dict = Depends(obtener_usua
     unidad_doc["activo"] = unidad_doc.get("activo", True)
     unidad_doc["creado_en"] = datetime.utcnow()
 
-    try:
-        resultado = coleccion_unidades.insert_one(unidad_doc)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Número económico duplicado o dato inválido")
+    resultado = coleccion_unidades.insert_one(unidad_doc)
 
     return UnidadRespuesta(
         id=str(resultado.inserted_id),
@@ -70,43 +94,41 @@ def crear_unidad(datos: UnidadCrear, usuario_actual: dict = Depends(obtener_usua
     )
 
 @router.get("/", response_model=List[UnidadRespuesta])
-def listar_unidades(tipo: str = None, activo: bool = None, limite: int = 100, salto: int = 0):
+def listar_unidades(tipo: str = None, activo: bool = None):
     filtro = {}
     if tipo:
         filtro["tipo"] = tipo
     if activo is not None:
         filtro["activo"] = activo
 
-    cursor = coleccion_unidades.find(filtro).skip(salto).limit(limite).sort("creado_en", -1)
-
-    resultado = []
-    for doc in cursor:
+    unidades = []
+    for doc in coleccion_unidades.find(filtro):
         unidad = doc.copy()
         unidad.pop("_id")
         unidad.pop("creado_en", None)
 
-        resultado.append(
+        unidades.append(
             UnidadRespuesta(
                 id=str(doc["_id"]),
                 unidad=unidad
             )
         )
 
-    return resultado
+    return unidades
 
 @router.get("/{id_unidad}", response_model=UnidadRespuesta)
 def obtener_unidad(id_unidad: str):
     unidad = obtener_unidad_por_id(id_unidad)
-    if unidad is None:
+    if not unidad:
         raise HTTPException(status_code=404, detail="Unidad no encontrada")
 
-    unidad_data = unidad.copy()
-    unidad_data.pop("_id")
-    unidad_data.pop("creado_en", None)
+    data = unidad.copy()
+    data.pop("_id")
+    data.pop("creado_en", None)
 
     return UnidadRespuesta(
         id=str(unidad["_id"]),
-        unidad=unidad_data
+        unidad=data
     )
 
 @router.patch("/{id_unidad}", response_model=UnidadRespuesta)
@@ -119,19 +141,15 @@ def actualizar_unidad(
         raise HTTPException(status_code=403, detail="No autorizado")
 
     unidad = obtener_unidad_por_id(id_unidad)
-    if unidad is None:
+    if not unidad:
         raise HTTPException(status_code=404, detail="Unidad no encontrada")
 
     actualizacion = datos.dict(exclude_unset=True)
-
     if actualizacion:
-        try:
-            coleccion_unidades.update_one(
-                {"_id": unidad["_id"]},
-                {"$set": actualizacion}
-            )
-        except Exception:
-            raise HTTPException(status_code=400, detail="Error al actualizar")
+        coleccion_unidades.update_one(
+            {"_id": unidad["_id"]},
+            {"$set": actualizacion}
+        )
 
     unidad_actualizada = obtener_unidad_por_id(id_unidad)
     unidad_data = unidad_actualizada.copy()
@@ -144,12 +162,48 @@ def actualizar_unidad(
     )
 
 @router.delete("/{id_unidad}", status_code=204)
-def eliminar_unidad(id_unidad: str, usuario_actual: dict = Depends(obtener_usuario_actual)):
+def eliminar_unidad(
+    id_unidad: str,
+    usuario_actual: dict = Depends(obtener_usuario_actual)
+):
     if not es_admin(usuario_actual):
         raise HTTPException(status_code=403, detail="No autorizado")
 
     unidad = obtener_unidad_por_id(id_unidad)
-    if unidad is None:
+    if not unidad:
         raise HTTPException(status_code=404, detail="Unidad no encontrada")
 
     coleccion_unidades.delete_one({"_id": unidad["_id"]})
+
+@router.post("/{id_unidad}/asignaciones")
+def asignar_vendedores_unidad(
+    id_unidad: str,
+    data: AsignacionUnidadRequest,
+    usuario_actual: dict = Depends(obtener_usuario_actual)
+):
+    if not es_admin(usuario_actual):
+        raise HTTPException(status_code=403, detail="Solo administrador")
+
+    unidad = obtener_unidad_por_id(id_unidad)
+    if not unidad:
+        raise HTTPException(status_code=404, detail="Unidad no encontrada")
+
+    cerrar_asignaciones_activas(id_unidad)
+    asignar_vendedores(id_unidad, data.vendedores)
+
+    return {"mensaje": "Vendedores asignados correctamente"}
+
+@router.get("/{id_unidad}/vendedores")
+def vendedores_actuales(id_unidad: str):
+    return list(coleccion_asignaciones.find(
+        {"idUnidad": id_unidad, "activo": True},
+        {"_id": 0}
+    ))
+
+
+@router.get("/{id_unidad}/asignaciones/historico")
+def historial_vendedores(id_unidad: str):
+    return list(coleccion_asignaciones.find(
+        {"idUnidad": id_unidad},
+        {"_id": 0}
+    ).sort("fecha_inicio", -1))

@@ -9,10 +9,11 @@ import Pedidos from "./pages/Pedidos";
 import Ventas from "./pages/Ventas";
 import CorteCaja from "./pages/CorteCaja";
 import Registrarse from "./pages/Registrarse";
-
 import MisPedidos from "./pages/MisPedidos";
 import NuevoPedido from "./pages/NuevoPedido";
 import PerfilCliente from "./pages/PerfilCliente";
+import AsignarUnidad from "./pages/AsignarUnidad";
+import VentaExterna from "./pages/VentaExterna";
 
 function App() {
   return (
@@ -28,6 +29,8 @@ function App() {
           <Route path="rutas" element={<Rutas />} />
           <Route path="pedidos" element={<Pedidos />} />
           <Route path="ventas" element={<Ventas />} />
+          <Route path="venta-externa" element={<VentaExterna />} />
+          <Route path="asignar-unidad" element={<AsignarUnidad />} />
           <Route path="corte-caja" element={<CorteCaja />} />
 
           <Route path="cliente">

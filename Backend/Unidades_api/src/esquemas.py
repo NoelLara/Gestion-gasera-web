@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Literal, List, Union
+from datetime import datetime
 
 class Cilindro(BaseModel):
     capacidad: Literal[10, 20, 30] = Field(..., example=20)
@@ -36,3 +37,13 @@ UnidadActualizar = Union[PipaActualizar, CamionActualizar]
 class UnidadRespuesta(BaseModel):
     id: str
     unidad: UnidadCrear
+
+class AsignacionUnidadRequest(BaseModel):
+    vendedores: List[int] = Field(..., min_items=1, max_items=2)
+
+class AsignacionUnidadOut(BaseModel):
+    idUnidad: str
+    idVendedor: int
+    fecha_inicio: datetime
+    fecha_fin: Optional[datetime]
+    activo: bool
