@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from esquemas import UsuarioCrear, UsuarioRespuesta, UsuarioActualizar, Token, TokenDatos, UsuarioVendedorCrear, UsuarioVendedorActualizar
+from esquemas import UsuarioCrear, UsuarioRespuesta, UsuarioActualizar, Token, UsuarioVendedorCrear, UsuarioVendedorActualizar
 from db import coleccion_usuarios
 from passlib.context import CryptContext
 from jose import jwt, JWTError
@@ -208,8 +208,8 @@ def crear_admin_si_no_existe():
         "telefono": "2281234567",
         "contrasena": hashear_contrasena("admin123"),
         "rol": "administrador",
-        "creado_en": datetime.utcnow(),
-        "activo": True
+        "activo": True,
+        "creado_en": datetime.utcnow()
     }
 
     coleccion_usuarios.insert_one(admin_data)

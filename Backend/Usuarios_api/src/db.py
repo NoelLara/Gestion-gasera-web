@@ -1,15 +1,12 @@
+import os
 from pymongo import MongoClient, ASCENDING
 
-usuario = "root"
-password = "rootpassword"
-host = "mongo"
-puerto = 27017
+MONGO_URI = os.environ["MONGO_URI"]
+MONGO_DB = os.environ["MONGO_DB"]
 
-uri = f"mongodb://{usuario}:{password}@{host}:{puerto}/?authSource=admin"
+client = MongoClient(MONGO_URI)
 
-client = MongoClient(uri)
-
-db = client["UsuariosDB"]
+db = client[MONGO_DB]
 coleccion_usuarios = db["usuarios"]
 
 coleccion_usuarios.create_index([("correo", ASCENDING)], unique=True)

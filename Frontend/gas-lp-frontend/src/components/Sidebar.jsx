@@ -7,6 +7,7 @@ import {
   FiTruck,
   FiUser,
   FiPackage,
+  FiDollarSign,
 } from "react-icons/fi";
 import "./Sidebar.scss";
 
@@ -34,6 +35,11 @@ export default function Sidebar({ rol }) {
               <span className="text">Ventas</span>
             </button>
 
+            <button onClick={() => navigate("/venta-externa")}>
+              <FiDollarSign className="icon" size={24} />
+              <span className="text">Venta Externa</span>
+            </button>
+
             <button onClick={() => navigate("/rutas")}>
               <FiMap className="icon" size={24} /> 
               <span className="text">Rutas</span>
@@ -47,6 +53,11 @@ export default function Sidebar({ rol }) {
             <button onClick={() => navigate("/unidades")}>
               <FiTruck className="icon" size={24} /> 
               <span className="text">Unidades</span>
+            </button>
+
+            <button onClick={() => navigate("/asignar-unidad")}>
+              <FiTruck className="icon" size={24} /> 
+              <span className="text">Asignar Unidad</span>
             </button>
 
             <button onClick={() => navigate("/vendedores")}>
