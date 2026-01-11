@@ -193,6 +193,13 @@ def asignar_vendedores_unidad(
 
     return {"mensaje": "Vendedores asignados correctamente"}
 
+@router.get("/{id_unidad}/asignaciones")
+def asignaciones_activas(id_unidad: str):
+    return list(coleccion_asignaciones.find(
+        {"idUnidad": id_unidad, "activo": True},
+        {"_id": 0}
+    ))
+
 @router.get("/{id_unidad}/vendedores")
 def vendedores_actuales(id_unidad: str):
     return list(coleccion_asignaciones.find(

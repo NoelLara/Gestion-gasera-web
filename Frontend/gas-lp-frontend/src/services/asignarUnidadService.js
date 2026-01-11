@@ -26,8 +26,8 @@ export const obtenerAsignacionesUnidad = (idUnidad) => {
 
 export const asignarVendedorUnidad = (idUnidad, idVendedor) => {
   return axios.post(
-    `${API_UNIDADES}/unidades/${idUnidad}/asignar-vendedor`,
-    { idVendedor },
+    `${API_UNIDADES}/unidades/${idUnidad}/asignaciones`,
+    { vendedores: [idVendedor] },
     authHeaders()
   );
 };

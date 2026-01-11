@@ -342,3 +342,51 @@ def obtener_usuario_interno(id_usuario: str):
         "id": str(usuario["_id"]),
         "nombre": usuario["nombre"]
     }
+
+@router.patch("/usuarios/vendedor/me", response_model=UsuarioRespuesta)
+def vendedor_actualizar_su_perfil(
+    datos: UsuarioVendedorActualizar,
+    usuario_actual: dict = Depends(obtener_usuario_actual),
+    token: str = Depends(oauth2_scheme)
+):
+    if usuario_actual["rol"] != "vendedor":
+        raise HTTPException(403, "Solo vendedores")
+
+    data = datos.model_dump(exclude_none=True)
+
+    if "correo" in data:
+        raise HTTPException(
+            status_code=403,
+            detail="El vendedor no puede modificar su correo"
+        )
+
+    if not data:
+        raise HTTPException(400, "Nada para actualizar")
+
+    coleccion_usuarios.update_one(
+        {"_id": ObjectId(usuario_actual["id"])},
+        {"$set": data}
+    )
+
+    try:
+        with httpx.Client(timeout=5) as client:
+            r = client.put(
+                f"{VENDEDORES_URL}/vendedores/usuario/{usuario_actual['id']}",
+                json={
+                    "nombre": data.get("nombre"),
+                    "telefono": data.get("telefono"),
+                    "activo": data.get("activo")
+                },
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            if r.status_code != 200:
+                raise Exception(r.text)
+
+    except Exception as e:
+        raise HTTPException(500, f"Error sincronizando vendedor: {str(e)}")
+
+    usuario = obtener_usuario_por_id(usuario_actual["id"])
+    usuario["id"] = str(usuario["_id"])
+    usuario.pop("contrasena", None)
+
+    return UsuarioRespuesta(**usuario)

@@ -53,3 +53,13 @@ export const getPedidosDelVendedorLogueado = async () => {
 
   return pedidosRes;
 };
+
+export const getMiPerfil = () =>
+  axios.get(`${API_URL_AUTH}/me`, authHeaders());
+
+export const actualizarMiPerfilVendedor = (data) =>
+  axios.patch(
+    `${API_URL_AUTH}/usuarios/vendedor/me`,
+    data,
+    authHeaders()
+  );
