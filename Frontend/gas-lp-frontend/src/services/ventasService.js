@@ -21,3 +21,7 @@ export const reportePorFechas = (inicio, fin) => {
     params: { inicio, fin }
   });
 };
+
+export const registrarVentaExterna = (venta) => {
+  return axios.post(`${API_URL}/ventas/externa`, venta);
+};

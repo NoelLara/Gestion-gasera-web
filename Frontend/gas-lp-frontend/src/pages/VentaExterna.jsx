@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./VentaExterna.scss";
-import { registrarVenta } from "../services/ventasService";
+import { registrarVentaExterna } from "../services/ventasService";
 import { FiPackage, FiDroplet, FiCheckCircle } from "react-icons/fi";
 
 const PRECIO_LITRO = 12.5;
@@ -84,7 +84,7 @@ export default function VentaExterna() {
 
     try {
       setLoading(true);
-      await registrarVenta(venta);
+      await registrarVentaExterna(venta);
       alert("Venta registrada correctamente");
       setLitros("");
       setCilindros([]);

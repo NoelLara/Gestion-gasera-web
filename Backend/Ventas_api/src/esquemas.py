@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from typing import Literal, List
 
 class ClientePublico(BaseModel):
     nombre: str
@@ -28,3 +29,14 @@ class VentaCreate(VentaBase):
 class VentaOut(VentaBase):
     idVenta: int
     fechaVenta: datetime
+
+class CilindroItem(BaseModel):
+    tipoCilindro: int
+    cantidad: int
+    
+class VentaExterna(BaseModel):
+    tipoVenta: Literal["cilindro", "estacionario"]
+    litros: Optional[float] = None
+    cilindros: Optional[List[CilindroItem]] = None
+    precioTotal: float
+    clientePublico: dict

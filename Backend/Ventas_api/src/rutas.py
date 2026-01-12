@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, date
 from db import coleccion_ventas
-from esquemas import VentaCreate
+from esquemas import VentaCreate, VentaExterna
 
 router = APIRouter()
 
@@ -92,3 +92,20 @@ def ventas_por_dia(fecha: date = Query(...)):
         "totalVentas": len(ventas),
         "ventas": ventas
     }
+
+@router.post("/ventas/externa", status_code=201)
+def registrar_venta_externa(data: VentaExterna):
+    if data.tipoVenta == "cilindro" and not data.cilindros:
+        raise HTTPException(status_code=400, detail="Debes especificar al menos un cilindro")
+    if data.tipoVenta == "estacionario" and (data.litros is None or data.litros <= 0):
+        raise HTTPException(status_code=400, detail="Debes especificar litros válidos")
+    
+    venta = data.model_dump()
+    venta["idVenta"] = generar_id()
+    venta["fechaVenta"] = datetime.utcnow()
+
+    coleccion_ventas.insert_one(venta)
+
+    venta.pop("_id", None)
+
+    return venta
