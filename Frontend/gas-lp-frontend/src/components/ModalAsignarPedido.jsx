@@ -42,7 +42,7 @@ export default function ModalAsignarPedido({ pedido, onClose, onSuccess }) {
         setMapaVendedores(vMap);
       } catch (e) {
         console.error(e);
-        alert("Error cargando datos 😿");
+        alert("Error cargando datos");
       } finally {
         setLoading(false);
       }
@@ -60,31 +60,31 @@ export default function ModalAsignarPedido({ pedido, onClose, onSuccess }) {
 
   const guardar = async () => {
     if (!rutaSeleccionada || !unidad || !vendedor) {
-      alert("Selecciona ruta, unidad y vendedor 😾");
+      alert("Selecciona ruta, unidad y vendedor");
       return;
     }
 
     try {
       await asignarPedido(pedido.idPedido, {
         idRuta: rutaSeleccionada.id,
-        idUnidad: Number(unidad),
+        idUnidad: unidad,
         idVendedor: Number(vendedor)
       });
 
       onSuccess();
       onClose();
     } catch {
-      alert("No se pudo asignar el pedido 💥");
+      alert("No se pudo asignar el pedido");
     }
   };
 
   return (
     <div className="modal-backdrop">
       <div className="modal">
-        <h3>🚚 Asignar pedido #{pedido.idPedido}</h3>
+        <h3>Asignar pedido #{pedido.idPedido}</h3>
 
         {loading ? (
-          <p>⏳ Cargando rutas...</p>
+          <p>Cargando rutas...</p>
         ) : (
           <>
             <select value={rutaSeleccionada?.id ?? ""} onChange={seleccionarRuta}>
@@ -102,7 +102,7 @@ export default function ModalAsignarPedido({ pedido, onClose, onSuccess }) {
                   <option value="">Unidad</option>
                     {[...new Set(rutaSeleccionada.unidades_asignadas.map(String))].map(u => (
                       <option key={`unidad-${u}`} value={u}>
-                        🚚 {mapaUnidades[u] ?? `Unidad #${u}`}
+                        {mapaUnidades[u] ?? `Unidad #${u}`}
                       </option>
                     ))}
                 </select>

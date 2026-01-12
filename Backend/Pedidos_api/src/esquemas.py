@@ -22,7 +22,7 @@ class PedidoCreate(PedidoBase):
 
 class PedidoAsignar(BaseModel):
     idRuta: Optional[str] = None
-    idUnidad: Optional[int] = None
+    idUnidad: Optional[str] = None
     idVendedor: Optional[int] = None
 
 class PedidoEstado(BaseModel):

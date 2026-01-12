@@ -6,7 +6,8 @@ import "./NuevoPedido.scss";
 
 export default function NuevoPedido() {
   const navigate = useNavigate();
-  const idCliente = sessionStorage.getItem("idCliente");
+  const perfil = JSON.parse(sessionStorage.getItem("perfil"));
+  const idCliente = perfil?.id;
 
   const [calle, setCalle] = useState("");
   const [numero, setNumero] = useState("");

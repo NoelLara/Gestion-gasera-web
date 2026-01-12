@@ -10,11 +10,6 @@ export default function RutaCard({
     <div className="ruta-card">
       <div className="ruta-header">
         <h3>{ruta.nombre}</h3>
-
-        <div className="contadores">
-          <span>🚚 Pendientes: {ruta.clientes_pendientes.length}</span>
-          <span>✅ Atendidos: {ruta.clientes_atendidos.length}</span>
-        </div>
       </div>
 
       <div className="ruta-body">
@@ -42,9 +37,9 @@ export default function RutaCard({
       </div>
 
       <div className="ruta-actions">
-        <button onClick={() => onVerMapa(ruta)}>🗺️ Mapa</button>
-        <button className="editar" onClick={() => onEditar(ruta)}>✏️ Editar</button>
-        <button className="eliminar" onClick={() => onEliminar(ruta.id)}>🗑️</button>
+        <button onClick={() => onVerMapa(ruta)}>Mapa</button>
+        <button className="editar" onClick={() => onEditar(ruta)}>Editar</button>
+        <button className="eliminar" onClick={() => onEliminar(ruta.id)}>Eliminar</button>
       </div>
     </div>
   );

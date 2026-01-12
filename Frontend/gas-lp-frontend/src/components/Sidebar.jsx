@@ -3,7 +3,6 @@ import {
   FiUsers,
   FiShoppingCart,
   FiMap,
-  FiCreditCard,
   FiTruck,
   FiUser,
   FiPackage,
@@ -43,11 +42,6 @@ export default function Sidebar({ rol }) {
             <button onClick={() => navigate("/rutas")}>
               <FiMap className="icon" size={24} /> 
               <span className="text">Rutas</span>
-            </button>
-
-            <button onClick={() => navigate("/corte-caja")}>
-              <FiCreditCard className="icon" size={24} /> 
-              <span className="text">Corte de Caja</span>
             </button>
 
             <button onClick={() => navigate("/unidades")}>
@@ -96,6 +90,11 @@ export default function Sidebar({ rol }) {
             <button onClick={() => navigate("/vendedor/pedidos")}>
               <FiPackage className="icon" size={24} />
               <span className="text">Mis pedidos</span>
+            </button>
+
+            <button onClick={() => navigate("/venta-externa")}>
+              <FiDollarSign className="icon" size={24} />
+              <span className="text">Venta Externa</span>
             </button>
 
             <button onClick={() => navigate("/vendedor/perfil")}>

@@ -23,21 +23,44 @@ def generar_id():
     return (ultimo["idPedido"] + 1) if ultimo else 1
 
 def registrar_venta_desde_pedido(pedido: dict):
+    cantidad = None
+    litros = None
+    if pedido["tipoPedido"] == "cilindro":
+        cilindros = pedido.get("cilindros") or []
+        if not cilindros:
+            print("Error: Pedido de cilindro sin cilindros definidos")
+            return
+        cantidad = sum(c["cantidad"] for c in cilindros)
+    elif pedido["tipoPedido"] == "estacionario":
+        litros = pedido.get("litros")
+        if not litros or litros <= 0:
+            print("Error: Pedido estacionario sin litros válidos")
+            return
+
+    if pedido.get("idVendedor") is None:
+        print("Error: Venta necesita idVendedor")
+        return
+
     venta = {
         "idPedido": pedido["idPedido"],
         "tipoVenta": pedido["tipoPedido"],
-        "cilindros": pedido.get("cilindros"),
-        "litros": pedido.get("litros"),
+        "cantidad": cantidad,
+        "litros": litros,
         "precioTotal": pedido["precioTotal"],
         "idCliente": pedido.get("idCliente"),
         "clientePublico": pedido.get("clientePublico"),
         "idVendedor": pedido["idVendedor"],
         "idUnidad": pedido["idUnidad"],
-        "idRuta": pedido.get("idRuta")
+        "idRuta": pedido.get("idRuta"),
     }
 
     try:
-        httpx.post(f"{VENTAS_URL}/ventas", json=venta, timeout=10)
+        with httpx.Client(timeout=10) as client:
+            res = client.post(f"{VENTAS_URL}/ventas", json=venta)
+            res.raise_for_status()
+            print(f"Venta registrada correctamente: {res.json()}")
+    except httpx.HTTPStatusError as e:
+        print(f"HTTP error registrando venta: {e.response.status_code} - {e.response.text}")
     except Exception as e:
         print(f"Error registrando venta: {e}")
 
@@ -204,3 +227,8 @@ def cancelar_pedido(idPedido: int):
     )
 
     return {"mensaje": "Pedido cancelado correctamente"}
+
+@router.get("/clientes/{id_cliente}/pedidos")
+def obtener_pedidos_cliente(id_cliente: str):
+    pedidos = list(coleccion_pedidos.find({"idCliente": id_cliente}, {"_id": 0}))
+    return pedidos

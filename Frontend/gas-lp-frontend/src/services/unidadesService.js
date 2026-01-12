@@ -22,7 +22,7 @@ export async function crearUnidad(data, token) {
 }
 
 export async function editarUnidad(id, data, token) {
-  const r = await fetch(`${API_URL}/${id}`, {
+  const r = await fetch(`${API_URL}${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -34,7 +34,7 @@ export async function editarUnidad(id, data, token) {
 }
 
 export async function eliminarUnidad(id, token) {
-  await fetch(`${API_URL}/${id}`, {
+  await fetch(`${API_URL}${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`

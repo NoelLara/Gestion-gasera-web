@@ -19,7 +19,7 @@ class VentaBase(BaseModel):
     clientePublico: Optional[ClientePublico] = None
 
     idVendedor: int
-    idUnidad: int
+    idUnidad: Optional[str] = None
     idRuta: Optional[str] = None
 
 class VentaCreate(VentaBase):

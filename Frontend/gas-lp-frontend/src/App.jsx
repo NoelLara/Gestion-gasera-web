@@ -7,7 +7,6 @@ import Vendedores from "./pages/Vendedores";
 import Rutas from "./pages/Rutas";
 import Pedidos from "./pages/Pedidos";
 import Ventas from "./pages/Ventas";
-import CorteCaja from "./pages/CorteCaja";
 import Registrarse from "./pages/Registrarse";
 import MisPedidos from "./pages/MisPedidos";
 import NuevoPedido from "./pages/NuevoPedido";
@@ -34,7 +33,6 @@ function App() {
           <Route path="ventas" element={<Ventas />} />
           <Route path="venta-externa" element={<VentaExterna />} />
           <Route path="asignar-unidad" element={<AsignarUnidad />} />
-          <Route path="corte-caja" element={<CorteCaja />} />
 
           <Route path="cliente">
             <Route index element={<MisPedidos />} />

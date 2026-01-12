@@ -6,7 +6,8 @@ export default function MisPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState("todos");
 
-  const idCliente = sessionStorage.getItem("idCliente");
+  const perfil = JSON.parse(sessionStorage.getItem("perfil"));
+  const idCliente = perfil?.id;
 
   useEffect(() => {
     if (idCliente) {
@@ -20,7 +21,7 @@ export default function MisPedidos() {
   };
 
   const cancelar = async (idPedido) => {
-    if (!window.confirm("¿Cancelar pedido? 😿")) return;
+    if (!window.confirm("¿Cancelar pedido?")) return;
     await cancelarPedido(idPedido);
     cargar();
   };
@@ -31,7 +32,7 @@ export default function MisPedidos() {
 
   return (
     <>
-      <h2>📦 Mis pedidos</h2>
+      <h2>Mis pedidos</h2>
 
       <div className="filtros-pedidos">
         <label>Estado:</label>

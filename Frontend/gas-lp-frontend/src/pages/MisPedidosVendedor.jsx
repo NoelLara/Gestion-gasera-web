@@ -18,8 +18,24 @@ export default function MisPedidosVendedor() {
     cargar();
   }, []);
 
-  const cambiarEstado = async (idPedido, estado) => {
-    await actualizarEstadoPedido(idPedido, estado);
+  const cambiarEstado = async (pedido, estado) => {
+    const data = {
+      estado,
+      idVendedor: pedido.idVendedor,
+      idUnidad: pedido.idUnidad,
+      tipoVenta: pedido.tipoPedido,
+      precioTotal: pedido.precioTotal,
+      cilindros: pedido.cilindros ?? undefined,
+      litros: pedido.litros ?? undefined,
+      idPedido: pedido.idPedido,
+      idCliente: pedido.idCliente ?? undefined,
+      clientePublico: pedido.clientePublico ?? undefined,
+      idRuta: pedido.idRuta ?? undefined,
+    };
+
+    console.log("🚀 Enviando datos completos a backend:", data);
+
+    await actualizarEstadoPedido(pedido.idPedido, estado, data);
 
     const res = await getPedidosDelVendedorLogueado();
     setPedidos(res.data);
@@ -45,7 +61,7 @@ export default function MisPedidosVendedor() {
           {pedidos.length === 0 && (
             <tr>
               <td colSpan="4" style={{ textAlign: "center" }}>
-                No tienes pedidos asignados 💤
+                No tienes pedidos asignados
               </td>
             </tr>
           )}
@@ -70,7 +86,7 @@ export default function MisPedidosVendedor() {
                   <div className="acciones-pedido">
                     <button
                       className="btn-atender"
-                      onClick={() => cambiarEstado(p.idPedido, "atendido")}
+                      onClick={() => cambiarEstado(p, "atendido")}
                     >
                       Atendido
                     </button>

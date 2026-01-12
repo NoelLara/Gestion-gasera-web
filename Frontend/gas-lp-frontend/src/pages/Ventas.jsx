@@ -4,6 +4,9 @@ import {
   listarVentas,
   corteDiario
 } from "../services/ventasService";
+import { getVendedores } from "../services/vendedoresService";
+import { obtenerUnidades } from "../services/unidadesService";
+import { obtenerRutas } from "../services/rutasService";
 
 export default function Ventas() {
   const [ventas, setVentas] = useState([]);
@@ -11,10 +14,34 @@ export default function Ventas() {
   const [fechaCorte, setFechaCorte] = useState("");
   const [resultadoCorte, setResultadoCorte] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [vendedores, setVendedores] = useState({});
+  const [unidades, setUnidades] = useState({});
+  const [rutas, setRutas] = useState({});
 
   useEffect(() => {
     cargarVentas();
+    cargarDatos();
   }, []);
+
+  const cargarDatos = async () => {
+    try {
+      const [resV, resU, resR] = await Promise.all([
+        getVendedores(),
+        obtenerUnidades(),
+        obtenerRutas()
+      ]);
+
+      console.log("Vendedores raw:", resV.data);
+      console.log("Unidades raw:", resU);
+      console.log("Rutas raw:", resR.data);
+
+      setVendedores(Object.fromEntries(resV.data.map(v => [Number(v.idVendedor), v.nombre])));
+      setUnidades(Object.fromEntries(resU.map(u => [u.id, u.unidad.numero_economico ?? `Unidad #${u.id}`])));
+      setRutas(Object.fromEntries(resR.data.map(r => [String(r.id), r.nombre])));
+    } catch (e) {
+      console.error("Error cargando datos maestros", e);
+    }
+  };
 
   const cargarVentas = async () => {
     try {
@@ -100,14 +127,12 @@ export default function Ventas() {
                 {new Date(venta.fechaVenta).toLocaleString()}
               </div>
 
-              <div className="info">
-                <span>Vendedor #{venta.idVendedor}</span>
-                <span>Unidad #{venta.idUnidad}</span>
-              </div>
+              <span>Vendedor: {vendedores[Number(venta.idVendedor)] || venta.idVendedor}</span>
+              <span>Unidad: {unidades[String(venta.idUnidad)] || venta.idUnidad}</span>
 
               {venta.idRuta && (
                 <div className="info">
-                  Ruta: {venta.idRuta}
+                  Ruta: {rutas[String(venta.idRuta)] || venta.idRuta}
                 </div>
               )}
             </div>
