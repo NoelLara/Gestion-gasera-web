@@ -54,3 +54,11 @@ class UsuarioVendedorActualizarSelf(BaseModel):
     telefono: Optional[str] = None
     contrasena_actual: Optional[str] = None
     contrasena_nueva: Optional[str] = Field(None, min_length=6)
+
+class UsuarioActualizarSelf(BaseModel):
+    nombre: Optional[str] = None
+    correo: Optional[EmailStr] = None
+    telefono: Optional[str] = None
+
+    contrasena_actual: Optional[str] = None
+    contrasena_nueva: Optional[str] = Field(None, min_length=6)

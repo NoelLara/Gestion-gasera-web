@@ -35,18 +35,20 @@ export async function obtenerPerfil() {
   return r.json();
 }
 
-export const actualizarPerfil = async (idUsuario, data) => {
+export const actualizarPerfil = async (payload) => {
   const token = sessionStorage.getItem("token");
 
-  return axios.patch(
-    `${API_URL}/usuarios/${idUsuario}`,
-    data,
+  const res = await axios.patch(
+    "http://localhost:8000/usuarios/me",
+    payload,
     {
       headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        Authorization: `Bearer ${token}`
+      }
     }
   );
+
+  return res.data;
 };
 
 export const registrar = async (usuario) => {

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from esquemas import UsuarioCrear, UsuarioRespuesta, UsuarioActualizar, Token, UsuarioVendedorCrear, UsuarioVendedorActualizar, UsuarioVendedorActualizarSelf
+from esquemas import UsuarioCrear, UsuarioRespuesta, UsuarioActualizar, Token, UsuarioVendedorCrear, UsuarioVendedorActualizar, UsuarioVendedorActualizarSelf, UsuarioActualizarSelf
 from db import coleccion_usuarios
 from passlib.context import CryptContext
 from jose import jwt, JWTError
@@ -113,6 +113,63 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     token = crear_token(datos_token)
     return Token(access_token=token)
 
+@router.patch("/usuarios/me", response_model=UsuarioRespuesta)
+def actualizar_mi_perfil(
+    datos: UsuarioActualizarSelf,
+    usuario_actual: dict = Depends(obtener_usuario_actual)
+):
+    data = datos.model_dump(exclude_none=True)
+
+    if not data:
+        raise HTTPException(400, detail="Nada para actualizar")
+
+    actualizacion = {}
+
+    if "nombre" in data:
+        actualizacion["nombre"] = data["nombre"]
+
+    if "telefono" in data:
+        actualizacion["telefono"] = data["telefono"]
+
+    if "correo" in data:
+        existente = obtener_usuario_por_correo(data["correo"])
+        if existente and str(existente["_id"]) != usuario_actual["id"]:
+            raise HTTPException(400, detail="Correo ya en uso")
+        actualizacion["correo"] = data["correo"]
+
+    if "contrasena_nueva" in data:
+        if "contrasena_actual" not in data:
+            raise HTTPException(
+                400,
+                detail="Debes enviar la contraseña actual"
+            )
+
+        if not verificar_contrasena(
+            data["contrasena_actual"],
+            usuario_actual["contrasena"]
+        ):
+            raise HTTPException(
+                400,
+                detail="Contraseña actual incorrecta"
+            )
+
+        actualizacion["contrasena"] = hashear_contrasena(
+            data["contrasena_nueva"]
+        )
+
+    if not actualizacion:
+        raise HTTPException(400, detail="Nada para actualizar")
+
+    coleccion_usuarios.update_one(
+        {"_id": ObjectId(usuario_actual["id"])},
+        {"$set": actualizacion}
+    )
+
+    usuario = obtener_usuario_por_id(usuario_actual["id"])
+    usuario["id"] = str(usuario["_id"])
+    usuario.pop("contrasena", None)
+
+    return UsuarioRespuesta(**usuario)
 
 @router.patch("/usuarios/vendedor/me", response_model=UsuarioRespuesta)
 def vendedor_actualizar_su_perfil(
