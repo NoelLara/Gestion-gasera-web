@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login, obtenerPerfil } from "../services/authService";
+import Lottie from "lottie-react";
+import camionAnimacion from "../assets/animations/delivery-truck.json";
 import "./Login.scss";
 
 export default function Login() {
@@ -11,17 +13,18 @@ export default function Login() {
     password: "",
   });
 
+  const [error, setError] = useState("");
+  const [cargando, setCargando] = useState(false);
+
   const manejarCambio = (e) => {
     const { name, value } = e.target;
-
-    setFormulario({
-      ...formulario,
-      [name]: value,
-    });
+    setFormulario({ ...formulario, [name]: value });
   };
 
   const manejarEnvio = async (e) => {
     e.preventDefault();
+    setError("");
+    setCargando(true);
 
     try {
       const respuesta = await login(
@@ -32,7 +35,6 @@ export default function Login() {
       sessionStorage.setItem("token", respuesta.access_token);
 
       const perfil = await obtenerPerfil();
-
       sessionStorage.setItem("perfil", JSON.stringify(perfil));
 
       if (perfil.rol === "administrador") {
@@ -40,19 +42,26 @@ export default function Login() {
       } else if (perfil.rol === "vendedor") {
         navigate("/vendedor/pedidos");
       } else if (perfil.rol === "cliente") {
-        sessionStorage.setItem("idCliente", perfil.id);
         navigate("/cliente");
       }
-
-    } catch (error) {
-      alert("Correo o contraseña incorrectos");
+    } catch (err) {
+      setError("Correo o contraseña incorrectos");
+    } finally {
+      setCargando(false);
     }
   };
 
   return (
     <div className="login-contenedor">
+      <div className="login-animacion">
+        <Lottie animationData={camionAnimacion} loop speed={0.9}/>
+        <p className="slogan">
+          Distribuyendo energía <span>todos los días</span>
+        </p>
+      </div>
+
       <div className="login-tarjeta">
-        <h1>Iniciar sesión</h1>
+        <h1>Bienvenido</h1>
 
         <form onSubmit={manejarEnvio}>
           <div className="campo">
@@ -61,8 +70,8 @@ export default function Login() {
               type="email"
               name="correo"
               value={formulario.correo}
-              placeholder="correo@ejemplo.com"
               onChange={manejarCambio}
+              placeholder="correo@ejemplo.com"
             />
           </div>
 
@@ -72,21 +81,29 @@ export default function Login() {
               type="password"
               name="password"
               value={formulario.password}
-              placeholder="••••••••"
               onChange={manejarCambio}
+              placeholder="••••••••"
             />
           </div>
 
+          {error && <p className="error">{error}</p>}
+
           <button
             type="submit"
-            disabled={!formulario.correo || !formulario.password}
+            disabled={
+              cargando ||
+              !formulario.correo ||
+              !formulario.password
+            }
           >
-            Entrar
+            {cargando ? "Entrando..." : "Entrar"}
           </button>
 
           <p className="ir-a-registrarse">
             ¿No tienes cuenta?{" "}
-            <span onClick={() => navigate("/registrarse")}>Regístrate aquí</span>
+            <span onClick={() => navigate("/registrarse")}>
+              Regístrate aquí
+            </span>
           </p>
         </form>
       </div>
