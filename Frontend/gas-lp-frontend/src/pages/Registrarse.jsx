@@ -25,21 +25,20 @@ export default function Registrarse() {
     const { name, value } = e.target;
     setFormulario({ ...formulario, [name]: value });
 
-    // Validaciones kawaii ✨
     let mensaje = "";
 
     switch(name) {
       case "nombre":
-        if (!value.trim()) mensaje = "El nombre no puede estar vacío 😿";
+        if (!value.trim()) mensaje = "El nombre no puede estar vacío";
         break;
       case "correo":
-        if (!emailRegex.test(value)) mensaje = "Correo no válido 😵";
+        if (!emailRegex.test(value)) mensaje = "Correo no válido";
         break;
       case "telefono":
-        if (!phoneRegex.test(value)) mensaje = "Teléfono debe tener 10 dígitos 😳";
+        if (!phoneRegex.test(value)) mensaje = "Teléfono debe tener 10 dígitos";
         break;
       case "contrasena":
-        if (value.length < 6) mensaje = "La contraseña debe tener al menos 6 caracteres 🥺";
+        if (value.length < 6) mensaje = "La contraseña debe tener al menos 6 caracteres";
         break;
     }
 
@@ -63,7 +62,7 @@ export default function Registrarse() {
     e.preventDefault();
 
     if (!formularioValido()) {
-      alert("Corrige los errores antes de enviar 😿");
+      alert("Corrige los errores antes de enviar");
       return;
     }
 

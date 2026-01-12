@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./VentaExterna.scss";
 import { registrarVentaExterna } from "../services/ventasService";
-import { FiPackage, FiDroplet, FiCheckCircle } from "react-icons/fi";
+import { FiCheckCircle } from "react-icons/fi";
 
 const PRECIO_LITRO = 12.5;
-const PRECIOS_CILINDRO = {
-  10: 150,
-  20: 300,
-  30: 450
-};
+const PRECIOS_CILINDRO = { 10: 150, 20: 300, 30: 450 };
 
 export default function VentaExterna() {
+  const navigate = useNavigate();
+
   const [tipoVenta, setTipoVenta] = useState("cilindro");
   const [litros, setLitros] = useState("");
   const [cilindros, setCilindros] = useState([]);
@@ -18,6 +17,8 @@ export default function VentaExterna() {
   const [cantidadCilindro, setCantidadCilindro] = useState(1);
   const [precioTotal, setPrecioTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  const [errores, setErrores] = useState({ litros: "", cilindros: "" });
 
   useEffect(() => {
     if (tipoVenta === "estacionario") {
@@ -35,10 +36,7 @@ export default function VentaExterna() {
     if (cantidadCilindro < 1) return;
 
     setCilindros(prev => {
-      const existente = prev.find(
-        c => c.tipoCilindro === Number(tamanoCilindro)
-      );
-
+      const existente = prev.find(c => c.tipoCilindro === Number(tamanoCilindro));
       if (existente) {
         return prev.map(c =>
           c.tipoCilindro === Number(tamanoCilindro)
@@ -46,15 +44,9 @@ export default function VentaExterna() {
             : c
         );
       }
-
-      return [
-        ...prev,
-        {
-          tipoCilindro: Number(tamanoCilindro),
-          cantidad: cantidadCilindro
-        }
-      ];
+      return [...prev, { tipoCilindro: Number(tamanoCilindro), cantidad: cantidadCilindro }];
     });
+    setErrores(prev => ({ ...prev, cilindros: "" }));
   };
 
   const eliminarCilindro = (tipo) => {
@@ -62,13 +54,21 @@ export default function VentaExterna() {
   };
 
   const registrar = async () => {
-    if (
-      (tipoVenta === "estacionario" && !litros) ||
-      (tipoVenta === "cilindro" && cilindros.length === 0)
-    ) {
-      alert("Completa la información");
-      return;
+    let valid = true;
+    const nuevosErrores = { litros: "", cilindros: "" };
+
+    if (tipoVenta === "estacionario" && !litros) {
+      nuevosErrores.litros = "El campo litros debe estar lleno";
+      valid = false;
     }
+    if (tipoVenta === "cilindro" && cilindros.length === 0) {
+      nuevosErrores.cilindros = "Debes agregar al menos un cilindro";
+      valid = false;
+    }
+
+    setErrores(nuevosErrores);
+
+    if (!valid) return;
 
     const venta = {
       idPedido: null,
@@ -76,91 +76,93 @@ export default function VentaExterna() {
       litros: tipoVenta === "estacionario" ? Number(litros) : null,
       cilindros: tipoVenta === "cilindro" ? cilindros : null,
       precioTotal,
-      clientePublico: {
-        nombre: "Cliente externo",
-        telefono: "N/A"
-      }
+      clientePublico: { nombre: "Cliente externo", telefono: "N/A" }
     };
 
     try {
       setLoading(true);
       await registrarVentaExterna(venta);
-      alert("Venta registrada correctamente");
-      setLitros("");
-      setCilindros([]);
+
+      navigate("/ventas");
     } catch (e) {
-      alert("Error al registrar la venta");
+      setErrores(prev => ({ ...prev, form: "Ocurrió un error al registrar la venta" }));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="venta-externa">
-      <h2>Venta externa</h2>
+    <div className="venta-externa-container">
+      <div className="venta-externa">
+        <h2>Venta externa</h2>
 
-      <div className="form">
-        <label>Tipo de venta</label>
-        <select value={tipoVenta} onChange={e => setTipoVenta(e.target.value)}>
-          <option value="cilindro">Cilindro</option>
-          <option value="estacionario">Estacionario</option>
-        </select>
+        <div className="form">
+          <label>Tipo de venta</label>
+          <select value={tipoVenta} onChange={e => setTipoVenta(e.target.value)}>
+            <option value="cilindro">Cilindro</option>
+            <option value="estacionario">Estacionario</option>
+          </select>
 
-        {tipoVenta === "estacionario" ? (
-          <>
-            <label>Litros</label>
-            <input
-              type="number"
-              min="1"
-              value={litros}
-              onChange={e => setLitros(e.target.value)}
-            />
-          </>
-        ) : (
-          <>
-            <label>Cilindros</label>
-
-            <div className="fila-cilindro">
-              <select
-                value={tamanoCilindro}
-                onChange={e => setTamanoCilindro(e.target.value)}
-              >
-                <option value="10">10 kg</option>
-                <option value="20">20 kg</option>
-                <option value="30">30 kg</option>
-              </select>
-
+          {tipoVenta === "estacionario" && (
+            <>
+              <label>Litros</label>
               <input
                 type="number"
                 min="1"
-                value={cantidadCilindro}
-                onChange={e => setCantidadCilindro(Number(e.target.value))}
+                value={litros}
+                onChange={e => setLitros(e.target.value)}
               />
+              {errores.litros && <p className="error-msg">{errores.litros}</p>}
+            </>
+          )}
 
-              <button type="button" onClick={agregarCilindro}>
-                <FiCheckCircle /> Agregar
-              </button>
-            </div>
+          {tipoVenta === "cilindro" && (
+            <>
+              <label>Cilindros</label>
+              <div className="fila-cilindro">
+                <select
+                  value={tamanoCilindro}
+                  onChange={e => setTamanoCilindro(e.target.value)}
+                >
+                  <option value="10">10 kg</option>
+                  <option value="20">20 kg</option>
+                  <option value="30">30 kg</option>
+                </select>
 
-            {cilindros.map(c => (
-              <div key={c.tipoCilindro} className="cilindro-item">
-                <span>{c.tipoCilindro} kg</span>
-                <span>Cantidad: {c.cantidad}</span>
-                <button onClick={() => eliminarCilindro(c.tipoCilindro)}>
-                  ✖
+                <input
+                  type="number"
+                  min="1"
+                  value={cantidadCilindro}
+                  onChange={e => setCantidadCilindro(Number(e.target.value))}
+                />
+
+                <button type="button" onClick={agregarCilindro}>
+                  <FiCheckCircle /> Agregar
                 </button>
               </div>
-            ))}
-          </>
-        )}
 
-        <div className="total">
-          Total: <strong>${precioTotal.toFixed(2)}</strong>
+              {errores.cilindros && <p className="error-msg">{errores.cilindros}</p>}
+
+              {cilindros.map(c => (
+                <div key={c.tipoCilindro} className="cilindro-item">
+                  <span>{c.tipoCilindro} kg</span>
+                  <span>Cantidad: {c.cantidad}</span>
+                  <button onClick={() => eliminarCilindro(c.tipoCilindro)}>✖</button>
+                </div>
+              ))}
+            </>
+          )}
+
+          <div className="total">
+            Total: <strong>${precioTotal.toFixed(2)}</strong>
+          </div>
+
+          {errores.form && <p className="error-msg">{errores.form}</p>}
+
+          <button onClick={registrar} disabled={loading}>
+            {loading ? "Registrando..." : "Registrar venta"}
+          </button>
         </div>
-
-        <button onClick={registrar} disabled={loading}>
-          Registrar venta
-        </button>
       </div>
     </div>
   );

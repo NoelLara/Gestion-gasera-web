@@ -138,7 +138,7 @@ export default function ModalEditarRuta({
   return (
     <div className="modal-overlay">
       <div className="modal-editar">
-        <h3>✏️ Editar Ruta</h3>
+        <h3>Editar Ruta</h3>
 
         <div className="grid">
           <div className="campo">

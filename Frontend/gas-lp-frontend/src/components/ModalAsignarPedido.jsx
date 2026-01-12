@@ -111,7 +111,7 @@ export default function ModalAsignarPedido({ pedido, onClose, onSuccess }) {
                   <option value="">Vendedor</option>
                     {[...new Set(rutaSeleccionada.vendedores_asignados.map(String))].map(v => (
                       <option key={`vendedor-${v}`} value={v}>
-                        👤 {mapaVendedores[v] ?? `Vendedor #${v}`}
+                        {mapaVendedores[v] ?? `Vendedor #${v}`}
                       </option>
                     ))}
                 </select>
@@ -119,7 +119,7 @@ export default function ModalAsignarPedido({ pedido, onClose, onSuccess }) {
             )}
 
             <div className="acciones">
-              <button onClick={guardar}>💾 Asignar</button>
+              <button onClick={guardar}>Asignar</button>
               <button className="cancelar" onClick={onClose}>
                 Cancelar
               </button>
