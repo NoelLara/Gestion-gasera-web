@@ -14,6 +14,7 @@ import NuevoPedido from "./pages/NuevoPedido";
 import PerfilCliente from "./pages/PerfilCliente";
 import AsignarUnidad from "./pages/AsignarUnidad";
 import VentaExterna from "./pages/VentaExterna";
+import PerfilVendedor from "./pages/PerfilVendedor";
 
 import MisPedidosVendedor from "./pages/MisPedidosVendedor";
 
@@ -43,6 +44,7 @@ function App() {
 
           <Route path="vendedor">
             <Route path="pedidos" element={<MisPedidosVendedor />} />
+            <Route path="perfil" element={<PerfilVendedor />} />
           </Route>
         </Route>
       </Routes>

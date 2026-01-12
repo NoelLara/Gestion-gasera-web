@@ -20,3 +20,7 @@ class VendedorUpdate(BaseModel):
     telefono: str
     correo: EmailStr
     activo: bool
+
+class VendedorSync(BaseModel):
+    nombre: Optional[str] = None
+    telefono: Optional[str] = None

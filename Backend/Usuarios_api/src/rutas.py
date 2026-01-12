@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from esquemas import UsuarioCrear, UsuarioRespuesta, UsuarioActualizar, Token, UsuarioVendedorCrear, UsuarioVendedorActualizar
+from esquemas import UsuarioCrear, UsuarioRespuesta, UsuarioActualizar, Token, UsuarioVendedorCrear, UsuarioVendedorActualizar, UsuarioVendedorActualizarSelf
 from db import coleccion_usuarios
 from passlib.context import CryptContext
 from jose import jwt, JWTError
@@ -112,6 +112,73 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
     token = crear_token(datos_token)
     return Token(access_token=token)
+
+
+@router.patch("/usuarios/vendedor/me", response_model=UsuarioRespuesta)
+def vendedor_actualizar_su_perfil(
+    datos: UsuarioVendedorActualizarSelf,
+    usuario_actual: dict = Depends(obtener_usuario_actual),
+    token: str = Depends(oauth2_scheme)
+):
+    if usuario_actual["rol"] != "vendedor":
+        raise HTTPException(403, "Solo vendedores")
+
+    data = datos.model_dump(exclude_none=True)
+
+    if not data:
+        raise HTTPException(400, "Nada para actualizar")
+
+    if "contrasena_nueva" in data:
+        if "contrasena_actual" not in data:
+            raise HTTPException(400, "Debes enviar la contraseña actual")
+
+        if not verificar_contrasena(
+            data["contrasena_actual"],
+            usuario_actual["contrasena"]
+        ):
+            raise HTTPException(400, "Contraseña actual incorrecta")
+
+        data["contrasena"] = hashear_contrasena(data["contrasena_nueva"])
+        data.pop("contrasena_actual")
+        data.pop("contrasena_nueva")
+
+    coleccion_usuarios.update_one(
+        {"_id": ObjectId(usuario_actual["id"])},
+        {"$set": data}
+    )
+
+    sync_data = {}
+    if "nombre" in data:
+        sync_data["nombre"] = data["nombre"]
+    if "telefono" in data:
+        sync_data["telefono"] = data["telefono"]
+
+    if sync_data:
+        try:
+            with httpx.Client(timeout=5) as client:
+                r = client.put(
+                    f"{VENDEDORES_URL}/vendedores/usuario/{usuario_actual['id']}",
+                    json=sync_data,
+                    headers={
+                        "Authorization": f"Bearer {token}"
+                    }
+                )
+
+                if r.status_code not in (200, 204):
+                    raise Exception(r.text)
+
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error sincronizando vendedor: {str(e)}"
+            )
+
+    return UsuarioRespuesta(
+        **{
+            **usuario_actual,
+            **data
+        }
+    )
 
 @router.get("/usuarios/{id_usuario}", response_model=UsuarioRespuesta)
 def obtener_usuario(id_usuario: str, usuario_actual: dict = Depends(obtener_usuario_actual)):
@@ -342,51 +409,3 @@ def obtener_usuario_interno(id_usuario: str):
         "id": str(usuario["_id"]),
         "nombre": usuario["nombre"]
     }
-
-@router.patch("/usuarios/vendedor/me", response_model=UsuarioRespuesta)
-def vendedor_actualizar_su_perfil(
-    datos: UsuarioVendedorActualizar,
-    usuario_actual: dict = Depends(obtener_usuario_actual),
-    token: str = Depends(oauth2_scheme)
-):
-    if usuario_actual["rol"] != "vendedor":
-        raise HTTPException(403, "Solo vendedores")
-
-    data = datos.model_dump(exclude_none=True)
-
-    if "correo" in data:
-        raise HTTPException(
-            status_code=403,
-            detail="El vendedor no puede modificar su correo"
-        )
-
-    if not data:
-        raise HTTPException(400, "Nada para actualizar")
-
-    coleccion_usuarios.update_one(
-        {"_id": ObjectId(usuario_actual["id"])},
-        {"$set": data}
-    )
-
-    try:
-        with httpx.Client(timeout=5) as client:
-            r = client.put(
-                f"{VENDEDORES_URL}/vendedores/usuario/{usuario_actual['id']}",
-                json={
-                    "nombre": data.get("nombre"),
-                    "telefono": data.get("telefono"),
-                    "activo": data.get("activo")
-                },
-                headers={"Authorization": f"Bearer {token}"}
-            )
-            if r.status_code != 200:
-                raise Exception(r.text)
-
-    except Exception as e:
-        raise HTTPException(500, f"Error sincronizando vendedor: {str(e)}")
-
-    usuario = obtener_usuario_por_id(usuario_actual["id"])
-    usuario["id"] = str(usuario["_id"])
-    usuario.pop("contrasena", None)
-
-    return UsuarioRespuesta(**usuario)

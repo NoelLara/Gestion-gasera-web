@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Header
-from esquemas import VendedorBase, VendedorOut, VendedorUpdate
+from esquemas import VendedorBase, VendedorOut, VendedorUpdate, VendedorSync
 from db import coleccion_vendedores
 from seguridad import verificar_token
 import httpx
@@ -100,3 +100,25 @@ def obtener_vendedor_por_usuario(
         raise HTTPException(404, "Vendedor no encontrado")
 
     return vendedor
+
+@router.put("/vendedores/usuario/{idUsuario}")
+def actualizar_vendedor_por_usuario(
+    idUsuario: str,
+    data: VendedorSync,
+    _=Depends(verificar_token)
+):
+    vendedor = coleccion_vendedores.find_one({"idUsuario": idUsuario})
+    if not vendedor:
+        raise HTTPException(404, "Vendedor no encontrado")
+
+    actualizacion = data.model_dump(exclude_none=True)
+
+    if not actualizacion:
+        raise HTTPException(400, "Nada para actualizar")
+
+    coleccion_vendedores.update_one(
+        {"idUsuario": idUsuario},
+        {"$set": actualizacion}
+    )
+
+    return {"mensaje": "Vendedor sincronizado correctamente"}

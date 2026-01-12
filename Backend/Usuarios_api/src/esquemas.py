@@ -48,3 +48,9 @@ class TokenDatos(BaseModel):
     id: Optional[str] = None
     correo: Optional[str] = None
     rol: Optional[str] = None
+
+class UsuarioVendedorActualizarSelf(BaseModel):
+    nombre: Optional[str] = None
+    telefono: Optional[str] = None
+    contrasena_actual: Optional[str] = None
+    contrasena_nueva: Optional[str] = Field(None, min_length=6)
