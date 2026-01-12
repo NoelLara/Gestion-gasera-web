@@ -92,11 +92,6 @@ export default function Sidebar({ rol }) {
               <span className="text">Mis pedidos</span>
             </button>
 
-            <button onClick={() => navigate("/venta-externa")}>
-              <FiDollarSign className="icon" size={24} />
-              <span className="text">Venta Externa</span>
-            </button>
-
             <button onClick={() => navigate("/vendedor/perfil")}>
               <FiUser className="icon" size={24} />
               <span className="text">Mi perfil</span>

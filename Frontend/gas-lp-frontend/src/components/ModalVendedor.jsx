@@ -36,7 +36,7 @@ export default function ModalVendedor({ vendedor, onClose, onGuardar }) {
   return (
     <div className="modal-overlay">
       <div className="modal-unidad">
-        <h3>{vendedor ? "✏️ Editar vendedor" : "➕ Nuevo vendedor"}</h3>
+        <h3>{vendedor ? "Editar vendedor" : "Nuevo vendedor"}</h3>
 
         <div className="grid">
           <div className="campo">

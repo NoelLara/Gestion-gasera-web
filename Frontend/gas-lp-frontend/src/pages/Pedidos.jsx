@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getPedidos, cambiarEstadoPedido } from "../services/pedidosService";
 import ModalAsignarPedido from "../components/ModalAsignarPedido";
+import ModalConfirm from "../components/ModalConfirm";
 import "./Pedidos.scss";
 
 export default function Pedidos() {
@@ -9,6 +10,7 @@ export default function Pedidos() {
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [ordenFecha, setOrdenFecha] = useState("recientes");
+  const [modal, setModal] = useState({ visible: false, mensaje: "", tipo: "info", onConfirm: null, onCancel: null });
 
   const cargar = async () => {
     setLoading(true);
@@ -29,19 +31,33 @@ export default function Pedidos() {
       ?? p.clientePublico?.nombre
       ?? "Cliente";
 
-  const cancelarPedido = async (pedido) => {
-    if (!window.confirm("¿Cancelar este pedido? 😿")) return;
-
-    try {
-      await cambiarEstadoPedido(pedido.idPedido, "cancelado");
-      cargar();
-    } catch (err) {
-      alert("No se pudo cancelar el pedido");
-    }
+  const cancelarPedido = (pedido) => {
+    setModal({
+      visible: true,
+      mensaje: `¿Seguro que quieres cancelar este pedido?`,
+      tipo: "info",
+      onConfirm: async () => {
+        try {
+          await cambiarEstadoPedido(pedido.idPedido, "cancelado");
+          cargar();
+        } catch (err) {
+          setModal({
+            visible: true,
+            mensaje: "No se pudo cancelar el pedido",
+            tipo: "error",
+            onConfirm: null,
+            onCancel: () => setModal({ ...modal, visible: false }),
+          });
+          return;
+        }
+        setModal({ ...modal, visible: false });
+      },
+      onCancel: () => setModal({ ...modal, visible: false }),
+    });
   };
 
   if (loading) {
-    return <p style={{ padding: "1rem" }}>⏳ Cargando pedidos...</p>;
+    return <p style={{ padding: "1rem" }}>Cargando pedidos...</p>;
   }
 
   const pedidosFiltrados = pedidos
@@ -130,7 +146,7 @@ export default function Pedidos() {
                 )}
 
                 {p.estado === "asignado" && (
-                  <span>🚚 En ruta</span>
+                  <span>En ruta</span>
                 )}
               </td>
             </tr>
@@ -143,6 +159,15 @@ export default function Pedidos() {
           pedido={pedidoAsignar}
           onClose={() => setPedidoAsignar(null)}
           onSuccess={cargar}
+        />
+      )}
+
+      {modal.visible && (
+        <ModalConfirm
+          mensaje={modal.mensaje}
+          tipo={modal.tipo}
+          onConfirm={modal.onConfirm}
+          onCancel={modal.onCancel}
         />
       )}
     </div>

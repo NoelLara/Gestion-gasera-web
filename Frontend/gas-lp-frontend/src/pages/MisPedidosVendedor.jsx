@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { getPedidosVendedor, actualizarEstadoPedido} from "../services/pedidosService";
 import { getPedidosDelVendedorLogueado } from "../services/vendedoresService";
 import ModalMapaRuta from "../components/ModalMapaRuta";
+import ModalConfirm from "../components/ModalConfirm";
 import { obtenerRuta } from "../services/rutasService";
 import "./Pedidos.scss";
 
 export default function MisPedidosVendedor() {
   const [pedidos, setPedidos] = useState([]);
   const [rutaSeleccionada, setRutaSeleccionada] = useState(null);
+  const [modal, setModal] = useState({ visible: false, mensaje: "", tipo: "info", onConfirm: null, onCancel: null });
 
   useEffect(() => {
     const cargar = async () => {
@@ -39,6 +41,28 @@ export default function MisPedidosVendedor() {
 
     const res = await getPedidosDelVendedorLogueado();
     setPedidos(res.data);
+  };
+
+  const cancelarPedidoConModal = (pedido) => {
+    setModal({
+      visible: true,
+      mensaje: `¿Seguro que quieres cancelar el pedido #${pedido.idPedido}?`,
+      tipo: "info",
+      onConfirm: async () => {
+        try {
+          await cambiarEstado(pedido, "cancelado");
+        } catch (err) {
+          setModal({
+            visible: true,
+            mensaje: "No se pudo cancelar el pedido",
+            tipo: "error",
+          });
+        } finally {
+          setModal({ ...modal, visible: false });
+        }
+      },
+      onCancel: () => setModal({ ...modal, visible: false }),
+    });
   };
 
   return (
@@ -93,7 +117,7 @@ export default function MisPedidosVendedor() {
 
                     <button
                       className="btn-cancelar"
-                      onClick={() => cambiarEstado(p.idPedido, "cancelado")}
+                      onClick={() => cancelarPedidoConModal(p)}
                     >
                       Cancelar
                     </button>
@@ -119,6 +143,16 @@ export default function MisPedidosVendedor() {
         <ModalMapaRuta
           ruta={rutaSeleccionada}
           onClose={() => setRutaSeleccionada(null)}
+        />
+      )}
+
+      {modal.visible && (
+        <ModalConfirm
+          mensaje={modal.mensaje}
+          tipo={modal.tipo}
+          onConfirm={modal.onConfirm}
+          onCancel={modal.onCancel}
+          onClose={() => setModal({ ...modal, visible: false })}
         />
       )}
     </div>

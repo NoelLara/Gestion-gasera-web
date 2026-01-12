@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { getPedidosCliente, cancelarPedido } from "../services/pedidosService";
+import ModalConfirm from "../components/ModalConfirm";
 import "./MisPedidos.scss";
 
 export default function MisPedidos() {
   const [pedidos, setPedidos] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState("todos");
+  const [modal, setModal] = useState({ visible: false, mensaje: "", tipo: "info", onConfirm: null });
 
   const perfil = JSON.parse(sessionStorage.getItem("perfil"));
   const idCliente = perfil?.id;
@@ -20,10 +22,27 @@ export default function MisPedidos() {
     setPedidos(response.data);
   };
 
-  const cancelar = async (idPedido) => {
-    if (!window.confirm("¿Cancelar pedido?")) return;
-    await cancelarPedido(idPedido);
-    cargar();
+  const cancelar = (idPedido) => {
+    setModal({
+      visible: true,
+      mensaje: `¿Seguro que quieres cancelar este pedido?`,
+      tipo: "info",
+      onConfirm: async () => {
+        try {
+          await cancelarPedido(idPedido);
+          cargar();
+        } catch (err) {
+          setModal({
+            visible: true,
+            mensaje: "No se pudo cancelar el pedido",
+            tipo: "error",
+          });
+        } finally {
+          setModal({ ...modal, visible: false });
+        }
+      },
+      onCancel: () => setModal({ ...modal, visible: false }),
+    });
   };
 
   const pedidosFiltrados = pedidos.filter(p =>
@@ -74,6 +93,16 @@ export default function MisPedidos() {
           )}
         </div>
       ))}
+
+      {modal.visible && (
+        <ModalConfirm
+          mensaje={modal.mensaje}
+          tipo={modal.tipo}
+          onClose={() => setModal({ ...modal, visible: false })}
+          onConfirm={modal.onConfirm}
+          onCancel={modal.onCancel}
+        />
+      )}
     </>
   );
 }

@@ -57,12 +57,19 @@ $azul-gas: #4A6FA5;
 }
 
 .venta-header {
-  background: $azul-gas;
   color: #ffffff;
   padding: 1rem 1.2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  &.normal {
+    background: $azul-gas;
+  }
+
+  &.externa {
+    background: #FFC107;
+  }
 
   .label {
     font-size: 0.8rem;

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import "./Vendedores.scss";
-import { FiEdit, FiTrash2, FiPlus } from "react-icons/fi";
+import { FiEdit, FiPlus } from "react-icons/fi";
 import ModalVendedor from "../components/ModalVendedor";
 import ModalEliminarVendedor from "../components/ModalEliminarVendedor";
-import { getVendedores, crearVendedor, editarVendedor, crearUsuarioVendedor } from "../services/vendedoresService";
+import { getVendedores, editarVendedor, crearUsuarioVendedor } from "../services/vendedoresService";
 
 export default function Vendedores() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -55,17 +55,10 @@ export default function Vendedores() {
     }
   };
 
-  const eliminarVendedor = () => {
-    setVendedores(prev =>
-      prev.filter(v => v.idVendedor !== vendedorEliminar.idVendedor)
-    );
-    setVendedorEliminar(null);
-  };
-
   return (
     <div className="vendedores-page">
       <header>
-        <h2>💼 Vendedores</h2>
+        <h2>Vendedores</h2>
         <button className="btn-agregar" onClick={() => abrirModal()}>
           <FiPlus /> Agregar vendedor
         </button>
@@ -94,12 +87,6 @@ export default function Vendedores() {
                   onClick={() => abrirModal(v)}
                 >
                   <FiEdit />
-                </button>
-                <button
-                  className="btn-eliminar"
-                  onClick={() => setVendedorEliminar(v)}
-                >
-                  <FiTrash2 />
                 </button>
               </td>
             </tr>

@@ -31,10 +31,6 @@ export default function Ventas() {
         obtenerRutas()
       ]);
 
-      console.log("Vendedores raw:", resV.data);
-      console.log("Unidades raw:", resU);
-      console.log("Rutas raw:", resR.data);
-
       setVendedores(Object.fromEntries(resV.data.map(v => [Number(v.idVendedor), v.nombre])));
       setUnidades(Object.fromEntries(resU.map(u => [u.id, u.unidad.numero_economico ?? `Unidad #${u.id}`])));
       setRutas(Object.fromEntries(resR.data.map(r => [String(r.id), r.nombre])));
@@ -95,49 +91,75 @@ export default function Ventas() {
           <p>No hay ventas registradas</p>
         )}
 
-        {ventasFiltradas.map((venta) => (
-          <div className="venta-card" key={venta.idVenta}>
-            <div className="venta-header">
+        {ventasFiltradas.map((venta) => {
+          const esExterna = !venta.idPedido;
+          return (
+            <div
+              className={`venta-card ${esExterna ? "externa" : ""}`}
+              key={venta.idVenta}
+            >
+            <div
+              className={`venta-header ${esExterna ? "externa" : "normal"}`}
+            >
               <div>
                 <span className="label">Total</span>
-                <span className="total">
-                  ${venta.precioTotal.toFixed(2)}
-                </span>
+                <span className="total">${venta.precioTotal.toFixed(2)}</span>
               </div>
 
               <div className="cantidad">
-                {venta.cantidad && (
+                {!esExterna && venta.cantidad && (
                   <span>{venta.cantidad} cilindros</span>
                 )}
-                {venta.litros && (
+                {!esExterna && venta.litros && <span>{venta.litros} L</span>}
+                {esExterna && venta.tipoVenta === "estacionario" && venta.litros && (
                   <span>{venta.litros} L</span>
+                )}
+                {esExterna && venta.tipoVenta === "cilindro" && venta.cilindros && (
+                  <span>
+                    {venta.cilindros.map(c => `${c.cantidad}x${c.tipoCilindro}kg`).join(", ")}
+                  </span>
                 )}
               </div>
             </div>
 
-            <div className="venta-body">
-              <div className="fila">
-                <span>Pedido #{venta.idPedido}</span>
-                <span className="badge">
-                  {venta.tipoVenta}
-                </span>
+              <div className="venta-body">
+                {!esExterna && (
+                  <>
+                    <div className="fila">
+                      <span>Pedido #{venta.idPedido}</span>
+                      <span className="badge">{venta.tipoVenta}</span>
+                    </div>
+
+                    <div className="fila fecha">
+                      {new Date(venta.fechaVenta).toLocaleString()}
+                    </div>
+
+                    <span>Vendedor: {vendedores[Number(venta.idVendedor)] || venta.idVendedor}</span>
+                    <span>Unidad: {unidades[String(venta.idUnidad)] || venta.idUnidad}</span>
+
+                    {venta.idRuta && (
+                      <div className="info">
+                        Ruta: {rutas[String(venta.idRuta)] || venta.idRuta}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {esExterna && venta.clientePublico && (
+                  <>
+                    <div className="fila">
+                      <span>{venta.clientePublico.nombre}</span>
+                      <span className="badge">{venta.tipoVenta}</span>
+                    </div>
+                    <div className="fila fecha">
+                      {new Date(venta.fechaVenta).toLocaleString()}
+                    </div>
+                  </>
+                )}
               </div>
-
-              <div className="fila fecha">
-                {new Date(venta.fechaVenta).toLocaleString()}
-              </div>
-
-              <span>Vendedor: {vendedores[Number(venta.idVendedor)] || venta.idVendedor}</span>
-              <span>Unidad: {unidades[String(venta.idUnidad)] || venta.idUnidad}</span>
-
-              {venta.idRuta && (
-                <div className="info">
-                  Ruta: {rutas[String(venta.idRuta)] || venta.idRuta}
-                </div>
-              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="corte-caja">
