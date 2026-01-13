@@ -93,7 +93,7 @@ def crear_pedido(data: PedidoCreate):
         if not data.litros or data.litros <= 0:
             raise HTTPException(400, "Debe especificar los litros")
 
-        PRECIO_LITRO = 12.5
+        PRECIO_LITRO = 22.5
         total = data.litros * PRECIO_LITRO
 
     pedido = data.model_dump()

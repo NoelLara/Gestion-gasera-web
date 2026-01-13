@@ -52,7 +52,7 @@ def test_listar_pedidos():
 def test_asignar_y_atender_pedido():
     esperar_api()
     pedido = {
-        "clientePublico": {"nombre": "Cliente Ruta", "telefono": "555-8888"},
+        "clientePublico": {"nombre": "Cliente Ruta", "telefono": "2282334455"},
         "tipoPedido": "estacionario",
         "litros": 300,
         "precioTotal": 4500,
@@ -66,7 +66,7 @@ def test_asignar_y_atender_pedido():
 
     r_asignar = httpx.put(
         f"{BASE_URL}/pedidos/{idPedido}/asignar",
-        json={"idRuta": "ruta123", "idUnidad": 1, "idVendedor": 2},
+        json={"idRuta": "ruta123", "idUnidad": "1", "idVendedor": "2"},
         timeout=10
     )
     assert r_asignar.status_code == 200

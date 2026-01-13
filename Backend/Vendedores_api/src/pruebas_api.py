@@ -74,10 +74,25 @@ def vendedor_creado(headers_admin):
     assert r.status_code == 201
 
     data = r.json()
-    vendedor_id = data["idVendedor"]
+    id_usuario = data["id"]
 
-    yield vendedor_id, correo
+    r2 = httpx.post(
+        f"{VENDEDORES_URL}/vendedores",
+        json={
+            "nombre": payload["nombre"],
+            "correo": correo,
+            "telefono": payload["telefono"],
+            "activo": True,
+            "idUsuario": id_usuario
+        },
+        headers=headers_admin,
+        timeout=5
+    )
+    assert r2.status_code == 201
 
+    vendedor = r2.json()
+
+    yield vendedor["correo"]
 
 def test_crear_vendedor(headers_admin):
     correo = f"crear_{int(time.time() * 1000)}@test.com"

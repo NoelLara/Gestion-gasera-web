@@ -37,7 +37,7 @@ def test_registrar_venta():
         "cantidad": 2,
         "precioTotal": 1500,
         "idVendedor": 1,
-        "idUnidad": 1
+        "idUnidad": "1"
     }
 
     r = httpx.post(f"{BASE_URL}/ventas", json=venta, timeout=10)
@@ -57,7 +57,7 @@ def test_corte_diario():
         "cantidad": 2,
         "precioTotal": 1500,
         "idVendedor": 1,
-        "idUnidad": 1
+        "idUnidad": "1"
     }
     httpx.post(f"{BASE_URL}/ventas", json=venta, timeout=10)
 
@@ -79,7 +79,7 @@ def test_reporte_fechas():
         "cantidad": 2,
         "precioTotal": 1500,
         "idVendedor": 1,
-        "idUnidad": 1
+        "idUnidad": "1"
     }
     httpx.post(f"{BASE_URL}/ventas", json=venta, timeout=10)
 

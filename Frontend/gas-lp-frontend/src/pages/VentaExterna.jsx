@@ -5,8 +5,8 @@ import "./VentaExterna.scss";
 import { registrarVentaExterna } from "../services/ventasService";
 import { FiCheckCircle } from "react-icons/fi";
 
-const PRECIO_LITRO = 12.5;
-const PRECIOS_CILINDRO = { 10: 150, 20: 300, 30: 450 };
+const PRECIO_LITRO = 22.5;
+const PRECIOS_CILINDRO = { 10: 250, 20: 500, 30: 750 };
 
 export default function VentaExterna() {
   const navigate = useNavigate();

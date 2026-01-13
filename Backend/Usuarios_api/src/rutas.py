@@ -310,12 +310,6 @@ def actualizar_usuario(
     if datos.contrasena:
         actualizacion["contrasena"] = hashear_contrasena(datos.contrasena)
 
-    if datos.rol:
-        raise HTTPException(
-            status_code=403,
-            detail="No está permitido cambiar el rol"
-        )
-
     if not actualizacion:
         raise HTTPException(
             status_code=400,
