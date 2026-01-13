@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import "./Ventas.scss";
 import {
   listarVentas,
-  corteDiario
+  corteDiario,
+  reportePorFechas
 } from "../services/ventasService";
 import { getVendedores } from "../services/vendedoresService";
 import { obtenerUnidades } from "../services/unidadesService";
 import { obtenerRutas } from "../services/rutasService";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function Ventas() {
   const [ventas, setVentas] = useState([]);
@@ -17,6 +20,45 @@ export default function Ventas() {
   const [vendedores, setVendedores] = useState({});
   const [unidades, setUnidades] = useState({});
   const [rutas, setRutas] = useState({});
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
+  const [resultadoReporte, setResultadoReporte] = useState(null);
+
+  const generarReporte = async () => {
+    if (!fechaInicio || !fechaFin) return;
+
+    try {
+      const res = await reportePorFechas(fechaInicio, fechaFin);
+      setResultadoReporte(res.data);
+    } catch (e) {
+      console.error("Error generando reporte", e);
+      alert("No se pudo generar el reporte");
+    }
+  };
+
+  const descargarReportePDF = () => {
+    if (!resultadoReporte) return;
+
+    const doc = new jsPDF();
+    autoTable(doc, {
+      head: [["ID Venta", "Tipo", "Cliente", "Vendedor", "Unidad", "Ruta", "Monto", "Fecha"]],
+      body: resultadoReporte.ventas.map((v) => [
+        v.idVenta,
+        v.tipoVenta,
+        v.clientePublico?.nombre || v.cliente,
+        vendedores[Number(v.idVendedor)] || v.idVendedor,
+        unidades[String(v.idUnidad)] || v.idUnidad,
+        rutas[String(v.idRuta)] || v.idRuta || "-",
+        `$${v.precioTotal.toFixed(2)}`,
+        new Date(v.fechaVenta).toLocaleString(),
+      ]),
+      startY: 35,
+      theme: "grid",
+      headStyles: { fillColor: [200, 200, 200] },
+    });
+
+    doc.save(`reporte_ventas_${resultadoReporte.inicio}_a_${resultadoReporte.fin}.pdf`);
+  };
 
   useEffect(() => {
     cargarVentas();
@@ -196,6 +238,51 @@ export default function Ventas() {
             </p>
           </div>
         )}
+
+        <div className="reporte-ventas">
+          <h3>Reporte por fechas</h3>
+          <div className="reporte-form">
+            <label>Inicio:</label>
+            <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} />
+            <label>Fin:</label>
+            <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} />
+            <button onClick={generarReporte}>Generar reporte</button>
+          </div>
+
+          {resultadoReporte && (
+            <div className="reporte-tabla">
+              <button className="boton-primario" onClick={descargarReportePDF}>Descargar PDF</button>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID Venta</th>
+                    <th>Tipo</th>
+                    <th>Cliente</th>
+                    <th>Vendedor</th>
+                    <th>Unidad</th>
+                    <th>Ruta</th>
+                    <th>Monto</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resultadoReporte.ventas.map(v => (
+                    <tr key={v.idVenta}>
+                      <td>{v.idVenta}</td>
+                      <td>{v.tipoVenta}</td>
+                      <td>{v.clientePublico?.nombre || v.cliente}</td>
+                      <td>{vendedores[Number(v.idVendedor)] || v.idVendedor}</td>
+                      <td>{unidades[String(v.idUnidad)] || v.idUnidad}</td>
+                      <td>{rutas[String(v.idRuta)] || v.idRuta || "-"}</td>
+                      <td>${v.precioTotal.toFixed(2)}</td>
+                      <td>{new Date(v.fechaVenta).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

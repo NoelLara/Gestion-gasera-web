@@ -4,10 +4,6 @@ import os
 import uuid
 from pymongo import MongoClient
 
-# =====================
-# Configuración
-# =====================
-
 BASE_URL = os.getenv("BASE_URL", "http://unidades_api_test:8001")
 USUARIOS_URL = "http://usuarios_api_test:8000"
 
@@ -20,13 +16,7 @@ db = cliente_mongo[MONGO_DB]
 coleccion_unidades = db["unidades"]
 coleccion_usuarios = db["usuarios"]
 
-# Cache del token admin
 _admin_token = None
-
-
-# =====================
-# Utilidades
-# =====================
 
 def esperar_api():
     for _ in range(20):
@@ -42,8 +32,6 @@ def esperar_api():
 
 def limpiar_bd():
     coleccion_unidades.delete_many({})
-    # ⚠️ NO limpiamos usuarios aquí (buena práctica)
-
 
 def crear_admin_y_token():
     """
@@ -62,12 +50,10 @@ def crear_admin_y_token():
         "rol": "administrador"
     }
 
-    # Crear usuario (si ya existe, la API devolverá 400 y está bien)
     r = httpx.post(f"{USUARIOS_URL}/usuarios", json=admin)
     if r.status_code not in (201, 400):
         raise RuntimeError(f"Error creando admin: {r.status_code} {r.text}")
 
-    # Login
     r = httpx.post(
         f"{USUARIOS_URL}/login",
         data={
@@ -79,11 +65,6 @@ def crear_admin_y_token():
 
     _admin_token = r.json()["access_token"]
     return _admin_token
-
-
-# =====================
-# Tests
-# =====================
 
 def test_listar_unidades_vacio_por_defecto():
     esperar_api()
