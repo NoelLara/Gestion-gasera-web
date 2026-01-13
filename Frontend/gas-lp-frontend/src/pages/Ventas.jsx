@@ -154,6 +154,10 @@ export default function Ventas() {
                     <div className="fila fecha">
                       {new Date(venta.fechaVenta).toLocaleString()}
                     </div>
+
+                    <span>
+                      Vendedor: {vendedores[Number(venta.idVendedor)] || venta.idVendedor}
+                    </span>
                   </>
                 )}
               </div>

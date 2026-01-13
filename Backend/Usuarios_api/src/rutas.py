@@ -97,21 +97,42 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
             detail="Correo o contraseña incorrectos"
         )
 
+    id_vendedor = None
+
     if usuario["rol"] == "vendedor" and not usuario.get("activo", False):
         raise HTTPException(
             status_code=403,
             detail="Vendedor inactivo. Contacta al administrador"
         )
+    
+    id_vendedor = None
+
+    if usuario["rol"] == "vendedor":
+        try:
+            r = httpx.get(
+                f"{VENDEDORES_URL}/vendedores/usuario/{str(usuario['_id'])}",
+                headers={
+                    "Authorization": f"Bearer {crear_token({'id': str(usuario['_id'])})}"
+                },
+                timeout=5
+            )
+
+            if r.status_code == 200:
+                id_vendedor = r.json()["idVendedor"]
+
+        except Exception:
+            pass
 
     datos_token = {
         "id": str(usuario["_id"]),
         "correo": usuario["correo"],
         "rol": usuario["rol"],
-        "activo": usuario["activo"]
+        "activo": usuario["activo"],
+        "idVendedor": id_vendedor
     }
 
     token = crear_token(datos_token)
-    return Token(access_token=token)
+    return Token(access_token=token, idVendedor=id_vendedor)
 
 @router.patch("/usuarios/me", response_model=UsuarioRespuesta)
 def actualizar_mi_perfil(

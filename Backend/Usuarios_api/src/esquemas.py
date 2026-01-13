@@ -43,6 +43,7 @@ class UsuarioVendedorActualizar(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    idVendedor: Optional[int] = None
 
 class TokenDatos(BaseModel):
     id: Optional[str] = None

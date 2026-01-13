@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./VentaExterna.scss";
@@ -19,6 +20,31 @@ export default function VentaExterna() {
   const [loading, setLoading] = useState(false);
 
   const [errores, setErrores] = useState({ litros: "", cilindros: "" });
+  const [exito, setExito] = useState("");
+  const [idVendedor, setIdVendedor] = useState(null);
+
+  useEffect(() => {
+    const cargarVendedor = async () => {
+      const perfil = JSON.parse(sessionStorage.getItem("perfil"));
+
+      try {
+        const res = await axios.get(
+          `http://localhost:8002/vendedores/usuario/${perfil.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        setIdVendedor(res.data.idVendedor);
+      } catch (e) {
+        console.error("No se pudo obtener el vendedor", e);
+      }
+    };
+
+    cargarVendedor();
+  }, []);
 
   useEffect(() => {
     if (tipoVenta === "estacionario") {
@@ -31,6 +57,7 @@ export default function VentaExterna() {
       setPrecioTotal(total);
     }
   }, [tipoVenta, litros, cilindros]);
+
 
   const agregarCilindro = () => {
     if (cantidadCilindro < 1) return;
@@ -71,19 +98,20 @@ export default function VentaExterna() {
     if (!valid) return;
 
     const venta = {
-      idPedido: null,
       tipoVenta,
       litros: tipoVenta === "estacionario" ? Number(litros) : null,
       cilindros: tipoVenta === "cilindro" ? cilindros : null,
       precioTotal,
-      clientePublico: { nombre: "Cliente externo", telefono: "N/A" }
+      clientePublico: { nombre: "Cliente externo", telefono: "N/A" },
+      idVendedor
     };
 
     try {
       setLoading(true);
       await registrarVentaExterna(venta);
 
-      navigate("/ventas");
+      setExito("Venta registrada con éxito");
+      setErrores({ litros: "", cilindros: ""});
     } catch (e) {
       setErrores(prev => ({ ...prev, form: "Ocurrió un error al registrar la venta" }));
     } finally {
@@ -158,6 +186,7 @@ export default function VentaExterna() {
           </div>
 
           {errores.form && <p className="error-msg">{errores.form}</p>}
+          {exito && <p className="success-msg">{exito}</p>}
 
           <button onClick={registrar} disabled={loading}>
             {loading ? "Registrando..." : "Registrar venta"}

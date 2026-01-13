@@ -40,3 +40,5 @@ class VentaExterna(BaseModel):
     cilindros: Optional[List[CilindroItem]] = None
     precioTotal: float
     clientePublico: dict
+
+    idVendedor: int

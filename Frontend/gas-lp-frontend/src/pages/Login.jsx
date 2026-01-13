@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login, obtenerPerfil } from "../services/authService";
 import Lottie from "lottie-react";
-import camionAnimacion from "../assets/animations/delivery-truck.json";
+import camionAnimacion from "../assets/animations/Delivery-Truck.json";
 import "./Login.scss";
 
 export default function Login() {

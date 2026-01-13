@@ -102,6 +102,15 @@ services:
     depends_on:
       - mongo
 
+  frontend:
+    build: ./Frontend/gas-lp-frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - ventas_api
+      - usuarios_api
+
   usuarios_api_test:
       build: ./Backend/Usuarios_api
       container_name: usuariosGas_api_test
