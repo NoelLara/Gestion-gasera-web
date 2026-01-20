@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getPedidosVendedor, actualizarEstadoPedido} from "../services/pedidosService";
 import { getPedidosDelVendedorLogueado } from "../services/vendedoresService";
+import { descargarTicketPorPedido } from "../services/ventasService";
 import ModalMapaRuta from "../components/ModalMapaRuta";
 import ModalConfirm from "../components/ModalConfirm";
 import { obtenerRuta } from "../services/rutasService";
@@ -10,6 +11,11 @@ export default function MisPedidosVendedor() {
   const [pedidos, setPedidos] = useState([]);
   const [rutaSeleccionada, setRutaSeleccionada] = useState(null);
   const [modal, setModal] = useState({ visible: false, mensaje: "", tipo: "info", onConfirm: null, onCancel: null });
+  const [modalPago, setModalPago] = useState({
+    visible: false,
+    pedido: null,
+    metodo: "efectivo",
+  });
 
   useEffect(() => {
     const cargar = async () => {
@@ -19,6 +25,22 @@ export default function MisPedidosVendedor() {
 
     cargar();
   }, []);
+
+  const descargarTicket = async (idPedido) => {
+    try {
+      const res = await descargarTicketPorPedido(idPedido);
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `ticket_${idPedido}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      alert("No se pudo descargar el ticket");
+    }
+  };
 
   const cambiarEstado = async (pedido, estado) => {
     const data = {
@@ -110,9 +132,11 @@ export default function MisPedidosVendedor() {
                   <div className="acciones-pedido">
                     <button
                       className="btn-atender"
-                      onClick={() => cambiarEstado(p, "atendido")}
+                      onClick={() =>
+                        setModalPago({ visible: true, pedido: p, metodo: "efectivo" })
+                      }
                     >
-                      Atendido
+                      Atender
                     </button>
 
                     <button
@@ -155,6 +179,41 @@ export default function MisPedidosVendedor() {
           onClose={() => setModal({ ...modal, visible: false })}
         />
       )}
+      {modalPago.visible && (
+        <ModalConfirm
+          mensaje={
+            <>
+              <p>Selecciona método de pago 💳</p>
+              <select
+                value={modalPago.metodo}
+                onChange={(e) =>
+                  setModalPago({ ...modalPago, metodo: e.target.value })
+                }
+              >
+                <option value="efectivo">Efectivo</option>
+                <option value="tarjeta">Tarjeta</option>
+              </select>
+            </>
+          }
+          tipo="info"
+          onConfirm={async () => {
+            const pedido = modalPago.pedido;
+
+            await cambiarEstado(
+              { ...pedido, metodoPago: modalPago.metodo },
+              "atendido"
+            );
+
+            await descargarTicket(pedido.idPedido);
+
+            setModalPago({ visible: false, pedido: null, metodo: "efectivo" });
+          }}
+          onCancel={() =>
+            setModalPago({ visible: false, pedido: null, metodo: "efectivo" })
+          }
+        />
+      )}
     </div>
   );
+
 }

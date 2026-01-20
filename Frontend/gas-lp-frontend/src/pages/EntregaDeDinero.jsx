@@ -3,122 +3,113 @@ import "./EntregaDeDinero.scss";
 import {
   listarVendedores,
   listarVentasPorVendedor,
-  pagarVenta
+  pagarAdeudo
 } from "../services/entregasService";
 
 export default function EntregaDeDinero() {
   const [vendedores, setVendedores] = useState([]);
   const [vendedorSeleccionado, setVendedorSeleccionado] = useState("");
-  const [ventas, setVentas] = useState([]);
+  const [fecha, setFecha] = useState("");
+  const [corte, setCorte] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    cargarVendedores();
+    listarVendedores().then(res => setVendedores(res.data));
   }, []);
 
-  const cargarVendedores = async () => {
-    try {
-      const res = await listarVendedores();
-      setVendedores(res.data);
-    } catch (e) {
-      console.error("Error cargando vendedores", e);
-    }
-  };
-
-  const seleccionarVendedor = async (idVendedor) => {
-    setVendedorSeleccionado(idVendedor);
-    if (!idVendedor) return;
+  const cargarCorte = async () => {
+    if (!vendedorSeleccionado) return;
 
     try {
       setLoading(true);
-      const res = await listarVentasPorVendedor(idVendedor);
-      setVentas(res.data.ventas || []);
+
+      const res = await listarVentasPorVendedor(vendedorSeleccionado);
+
+      const ventasEfectivo = res.data.ventas.filter(
+        v => v.metodoDePago === "efectivo"
+      );
+
+      const pendientes = ventasEfectivo.filter(v => v.adeudo === true);
+
+      const total = pendientes.reduce(
+        (sum, v) => sum + v.precioTotal,
+        0
+      );
+
+      setCorte({
+        totalVentas: ventasEfectivo.length,
+        totalEfectivo: total,
+        ventas: ventasEfectivo,
+        entregado: pendientes.length === 0
+      });
+
     } catch (e) {
-      console.error("Error cargando ventas", e);
+      console.error("Error cargando corte", e);
     } finally {
       setLoading(false);
     }
   };
 
-  const pagar = async (idVenta) => {
+  const marcarEntregado = async () => {
     try {
-      await pagarVenta(idVenta);
-      setVentas(prev =>
-        prev.map(v =>
-          v.idVenta === idVenta ? { ...v, adeudo: false } : v
-        )
-      );
+      const pendientes = corte.ventas.filter(v => v.adeudo === true);
+
+      for (const venta of pendientes) {
+        await pagarAdeudo(venta.idVenta);
+      }
+
+      setCorte(prev => ({
+        ...prev,
+        entregado: true,
+        ventas: prev.ventas.map(v => ({
+          ...v,
+          adeudo: false
+        }))
+      }));
     } catch (e) {
-      console.error("Error al pagar venta", e);
+      console.error("Error al entregar dinero", e);
     }
   };
 
   return (
     <div className="entrega-dinero-container">
-      <h2>Entrega de dinero</h2>
+      <h2>Corte de caja por vendedor</h2>
 
-      <label>Vendedor</label>
-      <select
-        value={vendedorSeleccionado}
-        onChange={e => seleccionarVendedor(e.target.value)}
-      >
-        <option value="">Seleccione un vendedor</option>
-        {vendedores.map(v => (
-          <option key={v.idVendedor} value={v.idVendedor}>
-            {v.nombre}
-          </option>
-        ))}
-      </select>
+      <div className="filtros">
+        <select
+          value={vendedorSeleccionado}
+          onChange={e => setVendedorSeleccionado(e.target.value)}
+        >
+          <option value="">Seleccione vendedor</option>
+          {vendedores.map(v => (
+            <option key={v.idVendedor} value={v.idVendedor}>
+              {v.nombre}
+            </option>
+          ))}
+        </select>
 
-      {loading && <p>Cargando ventas...</p>}
-
-      <div className="ventas-grid">
-        {ventas.map((venta, index) => (
-          <div key={venta.idVenta} className="venta-card">
-            <div className="venta-header">
-              <h4>Venta {index + 1}</h4>
-
-              {venta.adeudo && (
-                <button
-                  className="btn-pagar"
-                  onClick={() => pagar(venta.idVenta)}
-                >
-                  Pagar
-                </button>
-              )}
-            </div>
-
-            <p>
-                <strong>Fecha:</strong>{" "}
-                {new Date(venta.fechaVenta).toLocaleDateString()}
-            </p>
-
-            <p>
-              <strong>Cliente:</strong>{" "}
-                {venta.clientePublico
-                ? "Cliente externo"
-                : "Cliente interno"}
-            </p>
-
-            <p><strong>Vendedor:</strong> {venta.vendedorNombre}</p>
-            
-            <p><strong>Método de pago:</strong> {venta.metodoDePago}</p>
-
-            <p>
-              <strong>Producto:</strong>{" "}
-              {venta.tipoVenta === "cilindro"
-                ? venta.cilindros
-                    .map(c => `${c.cantidad} x ${c.tipoCilindro}kg`)
-                    .join(", ")
-                : `${venta.litros} litros`}
-            </p>
-
-            <p className="total">
-              <strong>Total:</strong> ${venta.precioTotal.toFixed(2)}
-            </p>
-          </div>
-        ))}
+        <button onClick={cargarCorte}>Buscar</button>
       </div>
+
+      {loading && <p>Cargando corte...</p>}
+
+      {corte && (
+        <div className="corte-card">
+          <h3>{corte.fecha}</h3>
+          <p><strong>Total ventas:</strong> {corte.totalVentas}</p>
+          <p className="total">
+            Total efectivo: ${corte.totalEfectivo.toFixed(2)}
+          </p>
+
+          {!corte.entregado ? (
+            <button className="btn-entregar" onClick={marcarEntregado}>
+              Entregar dinero
+            </button>
+          ) : (
+            <p className="entregado-ok">✔️ Dinero entregado</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

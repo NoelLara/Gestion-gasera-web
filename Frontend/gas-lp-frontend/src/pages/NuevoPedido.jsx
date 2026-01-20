@@ -17,6 +17,7 @@ export default function NuevoPedido() {
   const [tamanoCilindro, setTamanoCilindro] = useState("20");
   const [tipoPedido, setTipoPedido] = useState("LITROS");
   const [litros, setLitros] = useState("");
+  const [metodoDePago, setMetodoDePago] = useState("efectivo");
 
   const [errores, setErrores] = useState({
     calle: "",
@@ -59,7 +60,8 @@ export default function NuevoPedido() {
       tipoPedido: tipoPedido === "LITROS" ? "estacionario" : "cilindro",
       idCliente,
       lat: 0,
-      lng: 0
+      lng: 0,
+      metodoDePago,
     };
 
     if (tipoPedido === "LITROS") pedido.litros = Number(litros);
@@ -136,6 +138,17 @@ export default function NuevoPedido() {
             {errores.cilindros && <p className="error">{errores.cilindros}</p>}
           </div>
         )}
+
+        <div className="campo campo-full">
+          <FiCheckCircle className="icon" />
+          <select
+            value={metodoDePago}
+            onChange={(e) => setMetodoDePago(e.target.value)}
+          >
+            <option value="efectivo">💵 Efectivo</option>
+            <option value="tarjeta">💳 Tarjeta</option>
+          </select>
+        </div>
 
         {cilindros.length > 0 && (
           <div className="lista-cilindros">

@@ -2,6 +2,22 @@ from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, date
 from db import coleccion_ventas, coleccion_vendedores
 from esquemas import VentaCreate, VentaExterna
+from reportlab.lib.pagesizes import LETTER
+from reportlab.pdfgen import canvas
+from fastapi.responses import FileResponse
+import httpx
+import os
+from fastapi import Header
+
+CLIENTES_URL = os.getenv(
+    "VENTAS_CLIENTES_URL",
+    "http://usuarios_api:8000"
+)
+
+VENDEDORES_URL = os.getenv(
+    "VENTAS_VENDEDORES_URL",
+    "http://vendedores_api:8000"
+)
 
 router = APIRouter()
 
@@ -123,17 +139,6 @@ def ventas_por_vendedor(
     idVendedor: int = Query(...),
     adeudo: bool | None = Query(None)
 ):
-    vendedor = coleccion_vendedores.find_one(
-        {"idVendedor": idVendedor},
-        {"_id": 0, "nombre": 1}
-    )
-
-    if not vendedor:
-        raise HTTPException(
-            status_code=404,
-            detail="Vendedor no encontrado"
-        )
-
     filtro = {"idVendedor": idVendedor}
     if adeudo is not None:
         filtro["adeudo"] = adeudo
@@ -142,12 +147,8 @@ def ventas_por_vendedor(
         coleccion_ventas.find(filtro, {"_id": 0})
     )
 
-    for v in ventas:
-        v["vendedorNombre"] = vendedor["nombre"]
-
     return {
         "idVendedor": idVendedor,
-        "vendedor": vendedor["nombre"],
         "totalVentas": len(ventas),
         "ventas": ventas
     }
@@ -169,3 +170,87 @@ def pagar_adeudo(idVenta: int = Query(...)):
         "mensaje": "Adeudo pagado exitosamente",
         "idVenta": idVenta
     }
+
+@router.get("/ventas/pedido/{idPedido}/ticket")
+def generar_ticket_por_pedido(idPedido: int, authorization: str = Header(None)):
+    venta = coleccion_ventas.find_one({"idPedido": idPedido})
+    if not venta:
+        raise HTTPException(404, "No existe venta para este pedido")
+
+    cliente_nombre = "Cliente"
+    if venta.get("idCliente"):
+        try:
+            with httpx.Client(timeout=5) as client:
+                res = client.get(
+                    f"{CLIENTES_URL}/usuarios/interno/{venta['idCliente']}"
+                )
+                if res.status_code == 200:
+                    data = res.json()
+                    cliente_nombre = (
+                        data.get("nombre")
+                        or data.get("perfil", {}).get("nombre")
+                        or "Cliente"
+                    )
+        except:
+            cliente_nombre = "Cliente"
+
+    vendedor_nombre = "Vendedor"
+
+    if venta.get("idVendedor") and authorization:
+        try:
+            with httpx.Client(timeout=5) as client:
+                res = client.get(
+                    f"{VENDEDORES_URL}/vendedores/{venta['idVendedor']}",
+                    headers={
+                        "Authorization": authorization
+                    }
+                )
+                if res.status_code == 200:
+                    data = res.json()
+                    vendedor_nombre = data.get("nombre", "Vendedor")
+        except Exception as e:
+            vendedor_nombre = "Vendedor"
+
+
+    filename = f"ticket_pedido_{idPedido}.pdf"
+    path = f"/tmp/{filename}"
+
+    fecha = venta["fechaVenta"].strftime("%d/%m/%Y %H:%M")
+
+    c = canvas.Canvas(path, pagesize=LETTER)
+
+    c.setFont("Helvetica-Bold", 16)
+    c.drawCentredString(300, 750, "🧾 TICKET DE VENTA")
+
+    c.setFont("Helvetica", 11)
+    c.drawCentredString(
+        300,
+        730,
+        f"Venta #{venta['idVenta']}  |  Pedido #{venta['idPedido']}"
+    )
+
+    c.line(50, 715, 550, 715)
+
+    y = 690
+    c.drawString(50, y, f"Fecha: {fecha}")
+    y -= 20
+    c.drawString(50, y, f"Cliente: {cliente_nombre}")
+    y -= 20
+    c.drawString(50, y, f"Método de pago: {venta['metodoDePago']}")
+    y -= 30
+
+    c.setFont("Helvetica-Bold", 13)
+    c.drawString(50, y, f"Total pagado: ${venta['precioTotal']:.2f}")
+
+    c.setFont("Helvetica-Oblique", 9)
+    y -= 40
+    c.setFont("Helvetica-Oblique", 9)
+    c.drawCentredString(
+        300,
+        y,
+        "Gracias por su compra Gas Cat"
+    )
+
+    c.save()
+
+    return FileResponse(path, filename=filename, media_type="application/pdf")

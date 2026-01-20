@@ -15,7 +15,7 @@ export const listarVendedores = () => {
 
 export const listarVentasPorVendedor = (idVendedor) => {
   return axios.get(
-    `${API_VENTAS}/ventas`,
+    `${API_VENTAS}/ventas/ventasPorVendedor`,
     {
       ...authHeaders(),
       params: { idVendedor }
@@ -23,10 +23,13 @@ export const listarVentasPorVendedor = (idVendedor) => {
   );
 };
 
-export const pagarVenta = (idVenta) => {
-  return axios.put(
-    `${API_VENTAS}/ventas/${idVenta}/pagar`,
-    {},
-    authHeaders()
+export const pagarAdeudo = (idVenta) => {
+  return axios.patch(
+    `${API_VENTAS}/ventas/pagarAdeudo`,
+    null,
+    {
+      ...authHeaders(),
+      params: { idVenta }
+    }
   );
 };

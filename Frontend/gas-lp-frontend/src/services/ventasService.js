@@ -25,3 +25,8 @@ export const reportePorFechas = (inicio, fin) => {
 export const registrarVentaExterna = (venta) => {
   return axios.post(`${API_URL}/ventas/externa`, venta);
 };
+
+export const descargarTicketPorPedido = (idPedido) =>
+  axios.get(`${API_URL}/ventas/pedido/${idPedido}/ticket`, {
+    responseType: "blob",
+  });

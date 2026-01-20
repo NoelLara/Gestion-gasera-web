@@ -170,3 +170,18 @@ $azul-gas: #4A6FA5;
   justify-content: flex-end;
   gap: 0.6rem;
 }
+
+.btn-ticket {
+    margin-top: 0.8rem;
+  align-self: flex-end;
+  background: #ff9800;
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+
+  &:hover {
+    background: #f57c00;
+  }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getPedidosCliente, cancelarPedido } from "../services/pedidosService";
 import ModalConfirm from "../components/ModalConfirm";
+import { descargarTicketPorPedido } from "../services/ventasService";
 import "./MisPedidos.scss";
 
 export default function MisPedidos() {
@@ -43,6 +44,22 @@ export default function MisPedidos() {
       },
       onCancel: () => setModal({ ...modal, visible: false }),
     });
+  };
+
+  const descargarTicket = async (idVenta) => {
+    try {
+      const res = await descargarTicketPorPedido(idVenta);
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `ticket_${idVenta}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      alert("No se pudo descargar el ticket");
+    }
   };
 
   const pedidosFiltrados = pedidos.filter(p =>
@@ -89,6 +106,14 @@ export default function MisPedidos() {
           {p.estado === "pendiente" && (
             <button className="btn-cancelar" onClick={() => cancelar(p.idPedido)}>
               Cancelar pedido
+            </button>
+          )}
+          {p.estado === "atendido" && (
+            <button
+              className="btn-ticket"
+              onClick={() => descargarTicket(p.idPedido)}
+            >
+              🧾 Descargar ticket
             </button>
           )}
         </div>
