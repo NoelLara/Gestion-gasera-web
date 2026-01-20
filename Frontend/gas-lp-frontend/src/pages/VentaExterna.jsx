@@ -18,6 +18,7 @@ export default function VentaExterna() {
   const [cantidadCilindro, setCantidadCilindro] = useState(1);
   const [precioTotal, setPrecioTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [metodoPago, setMetodoPago] = useState("efectivo");
 
   const [errores, setErrores] = useState({ litros: "", cilindros: "" });
   const [exito, setExito] = useState("");
@@ -103,7 +104,8 @@ export default function VentaExterna() {
       cilindros: tipoVenta === "cilindro" ? cilindros : null,
       precioTotal,
       clientePublico: { nombre: "Cliente externo", telefono: "N/A" },
-      idVendedor
+      idVendedor,
+      metodoDePago: metodoPago
     };
 
     try {
@@ -180,6 +182,12 @@ export default function VentaExterna() {
               ))}
             </>
           )}
+
+          <label>Método de pago</label>
+          <select value={metodoPago} onChange={e => setMetodoPago(e.target.value)}>
+            <option value="efectivo">Efectivo</option>
+            <option value="tarjeta">Tarjeta</option>
+          </select>
 
           <div className="total">
             Total: <strong>${precioTotal.toFixed(2)}</strong>
