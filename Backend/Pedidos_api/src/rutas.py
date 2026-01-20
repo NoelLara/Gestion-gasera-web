@@ -52,6 +52,7 @@ def registrar_venta_desde_pedido(pedido: dict):
         "idVendedor": pedido["idVendedor"],
         "idUnidad": pedido["idUnidad"],
         "idRuta": pedido.get("idRuta"),
+        "metodoDePago": pedido.get("metodoDePago"),
     }
 
     try:

@@ -8,6 +8,7 @@ import {
   FiPackage,
   FiDollarSign,
 } from "react-icons/fi";
+import { FaCoins } from "react-icons/fa";
 import "./Sidebar.scss";
 
 export default function Sidebar({ rol }) {
@@ -57,6 +58,11 @@ export default function Sidebar({ rol }) {
             <button onClick={() => navigate("/pedidos")}>
               <FiPackage className="icon" size={24} /> 
               <span className="text">Pedidos</span>
+            </button>
+
+            <button onClick={() => navigate("/entrega-dinero")}>
+              <FaCoins className="icon" size={24} /> 
+              <span className="text">Entrega de Dinero</span>
             </button>
           </>
         )}

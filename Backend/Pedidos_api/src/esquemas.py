@@ -16,6 +16,7 @@ class PedidoBase(BaseModel):
     direccion: str
     lat: float
     lng: float
+    metodoDePago: str  # efectivo | tarjeta
 
 class PedidoCreate(PedidoBase):
     pass

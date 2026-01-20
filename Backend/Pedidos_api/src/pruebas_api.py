@@ -33,6 +33,7 @@ def test_crear_pedido_cliente_publico():
         "clientePublico": {"nombre": "Juan Público", "telefono": "555-1234"},
         "tipoPedido": "cilindro",
         "cilindros": [{"tipoCilindro": 20, "cantidad": 2}],
+        "metodoDePago": "efectivo",
         "direccion": "Calle Falsa 123",
         "lat": 19.43,
         "lng": -99.13
@@ -55,6 +56,7 @@ def test_asignar_y_atender_pedido():
         "clientePublico": {"nombre": "Cliente Ruta", "telefono": "2282334455"},
         "tipoPedido": "estacionario",
         "litros": 300,
+        "metodoDePago": "efectivo",
         "precioTotal": 4500,
         "direccion": "Av Siempre Viva",
         "lat": 19.5,

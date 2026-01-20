@@ -14,6 +14,7 @@ import PerfilCliente from "./pages/PerfilCliente";
 import AsignarUnidad from "./pages/AsignarUnidad";
 import VentaExterna from "./pages/VentaExterna";
 import PerfilVendedor from "./pages/PerfilVendedor";
+import EntregaDeDinero from "./pages/EntregaDeDinero";
 
 import MisPedidosVendedor from "./pages/MisPedidosVendedor";
 
@@ -33,6 +34,7 @@ function App() {
           <Route path="ventas" element={<Ventas />} />
           <Route path="venta-externa" element={<VentaExterna />} />
           <Route path="asignar-unidad" element={<AsignarUnidad />} />
+          <Route path="entrega-dinero" element={<EntregaDeDinero />} />
 
           <Route path="cliente">
             <Route index element={<MisPedidos />} />

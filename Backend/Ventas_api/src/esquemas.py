@@ -23,6 +23,9 @@ class VentaBase(BaseModel):
     idUnidad: Optional[str] = None
     idRuta: Optional[str] = None
 
+    metodoDePago: str # efectivo | tarjeta
+    adeudo: Optional[bool] = True
+
 class VentaCreate(VentaBase):
     pass
 
@@ -42,3 +45,5 @@ class VentaExterna(BaseModel):
     clientePublico: dict
 
     idVendedor: int
+    metodoDePago: str
+    adeudo: Optional[bool] = True

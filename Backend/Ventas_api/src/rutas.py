@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, date
-from db import coleccion_ventas
+from db import coleccion_ventas, coleccion_vendedores
 from esquemas import VentaCreate, VentaExterna
 
 router = APIRouter()
@@ -22,6 +22,10 @@ def registrar_venta(data: VentaCreate):
         )
 
     venta = data.model_dump()
+
+    if venta.get("metodoDePago") == "tarjeta":
+        venta["adeudo"] = None
+
     venta["idVenta"] = generar_id()
     venta["fechaVenta"] = datetime.utcnow()
 
@@ -101,6 +105,10 @@ def registrar_venta_externa(data: VentaExterna):
         raise HTTPException(status_code=400, detail="Debes especificar litros válidos")
     
     venta = data.model_dump()
+
+    if venta.get("metodoDePago") == "tarjeta":
+        venta["adeudo"] = None
+
     venta["idVenta"] = generar_id()
     venta["fechaVenta"] = datetime.utcnow()
 
@@ -109,3 +117,55 @@ def registrar_venta_externa(data: VentaExterna):
     venta.pop("_id", None)
 
     return venta
+
+@router.get("/ventas/ventasPorVendedor")
+def ventas_por_vendedor(
+    idVendedor: int = Query(...),
+    adeudo: bool | None = Query(None)
+):
+    vendedor = coleccion_vendedores.find_one(
+        {"idVendedor": idVendedor},
+        {"_id": 0, "nombre": 1}
+    )
+
+    if not vendedor:
+        raise HTTPException(
+            status_code=404,
+            detail="Vendedor no encontrado"
+        )
+
+    filtro = {"idVendedor": idVendedor}
+    if adeudo is not None:
+        filtro["adeudo"] = adeudo
+
+    ventas = list(
+        coleccion_ventas.find(filtro, {"_id": 0})
+    )
+
+    for v in ventas:
+        v["vendedorNombre"] = vendedor["nombre"]
+
+    return {
+        "idVendedor": idVendedor,
+        "vendedor": vendedor["nombre"],
+        "totalVentas": len(ventas),
+        "ventas": ventas
+    }
+
+@router.patch("/ventas/pagarAdeudo")
+def pagar_adeudo(idVenta: int = Query(...)):
+    resultado = coleccion_ventas.update_one(
+        {"idVenta": idVenta, "adeudo": True},
+        {"$set": {"adeudo": False}}
+    )
+
+    if resultado.matched_count == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Venta no encontrada o no tiene adeudo"
+        )
+
+    return {
+        "mensaje": "Adeudo pagado exitosamente",
+        "idVenta": idVenta
+    }
